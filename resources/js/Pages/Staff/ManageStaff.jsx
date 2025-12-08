@@ -1,21 +1,42 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 
 export default function ManageStaff({ auth, staffList }) {
+    
+    // State for the search bar
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // --- AUTO RELOAD LOGIC (Keep this, it's good) ---
     useEffect(() => {
         const interval = setInterval(() => {
-            // This asks Laravel to reload ONLY the 'staffList' prop
-            // It preserves your scroll position and doesn't flash the screen
             router.reload({ 
                 only: ['staffList'],
                 preserveScroll: true 
             });
-        }, 3000); // 3000ms = 3 seconds
+        }, 3000); 
 
-        // Cleanup: Stop the timer when you leave the page
         return () => clearInterval(interval);
     }, []);
+
+    // Filter staff based on search input (Client-side)
+    const filteredStaff = staffList.filter(user => 
+        user.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.StaffID.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    const handleDelete = (user) => {
+    // 1. Show the warning
+        if (confirm(`Are you sure you want to delete ${user.Name}?`)) {
+            
+            // 2. If they click "OK", send the delete request
+            // Make sure you have a route named 'staff.destroy' or similar in web.php
+            router.delete(route('staff.destroy', user.StaffID), {
+                preserveScroll: true,
+            });
+        }
+    };
+    
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -23,72 +44,85 @@ export default function ManageStaff({ auth, staffList }) {
         >
             <Head title="Manage Staff" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div className="py-12 bg-white min-h-screen">
+                <div className="mx-auto max-w-5xl sm:px-6 lg:px-8">
                     
-                    {/* Top Action Bar */}
-                    <div className="flex justify-between items-center mb-6">
-                        <p className="text-gray-600">Total Staff: {staffList.length}</p>
+                    {/* TOP BAR: Search & Add Button */}
+                    <div className="flex justify-between items-center mb-10 gap-4">
+                        {/* Search Bar */}
+                        <div className="relative w-full max-w-xl">
+                            <input 
+                                type="text" 
+                                placeholder="Staff Number or Name" 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-purple-100 border-none rounded-full px-6 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="absolute right-4 top-3 text-gray-400">🔍</span>
+                        </div>
                         
-                        {/* Button to Register New Staff */}
+                        {/* Add Staff Button */}
                         <Link
                             href={route('register')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-sm transition-colors"
+                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-md flex items-center transition-transform transform hover:scale-105"
                         >
-                            + Register New Staff
+                            <span className="mr-2 text-xl">+</span> ADD STAFF
                         </Link>
                     </div>
 
-                    {/* Staff Table */}
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg border border-gray-200">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {staffList.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
-                                                No staff members found.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        staffList.map((user) => (
-                                            <tr key={user.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                    {user.StaffID}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                    <div className="font-bold">{user.Name}</div>
-                                                    <div className="text-gray-500 text-xs">{user.email}</div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                                    {user.PhoneNum}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                        ${user.Role === 'Manager' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
-                                                        {user.Role}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                    <button className="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
-                                                    <button className="text-red-600 hover:text-red-900">Delete</button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                    {/* STAFF CARDS LIST */}
+                    <div className="space-y-6">
+                        {filteredStaff.length === 0 ? (
+                            <div className="text-center text-gray-500 py-10">No staff found.</div>
+                        ) : (
+                            filteredStaff.map((user) => (
+                                <div key={user.id} className="border-2 border-black p-6 flex justify-between items-center bg-white hover:shadow-lg transition-shadow">
+                                    
+                                    {/* Left Side: ID & Info */}
+                                    <div className="flex items-center gap-8">
+                                        {/* Staff ID - Big Font */}
+                                        <div className="text-5xl font-light text-black tracking-tighter">
+                                            {user.StaffID}
+                                        </div>
+                                        
+                                        {/* Name & Role */}
+                                        <div>
+                                            <h3 className="text-3xl font-bold text-black">{user.Name}</h3>
+                                            <p className="text-gray-400 text-xl font-bold mt-1">Role: {user.Role}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Side: Status & Update Button */}
+                                    <div className="flex flex-col items-end gap-2">
+                                        <div className="text-right">
+                                            <span className="text-xl text-black font-normal">status:</span>
+                                            <div className="text-3xl font-normal text-black">
+                                                {user.ActiveStatus == 1 ? 'Active' : 'Inactive'}
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Update Link (Green) */}
+                                        <Link
+                                            href={route('staff.update', user.StaffID)}
+                                            className="border border-black px-6 py-1 mt-2 text-xs font-bold text-green-600 uppercase hover:bg-green-50 transition-colors inline-block text-center w-full"
+                                        >
+                                            UPDATE
+                                        </Link>
+
+                                        {/* Delete Button (Red) */}
+                                        <button 
+                                            onClick={() => handleDelete(user)}
+                                            className="border border-black px-6 py-1 text-xs font-bold text-red-600 uppercase hover:bg-red-50 transition-colors w-full"
+                                        >
+                                            DELETE
+                                        </button>
+                                    </div>
+
+                                </div>
+                            ))
+                        )}
                     </div>
+
                 </div>
             </div>
         </AuthenticatedLayout>

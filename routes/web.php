@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StaffController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Models\Parcel;
@@ -22,7 +23,11 @@ Route::post('/parcel/track', [App\Http\Controllers\ParcelsController::class, 'tr
 Route::middleware(['auth','manager'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
-    Route::get('/staff', [App\Http\Controllers\StaffController::class, 'index'])->name('staff.index');
+    Route::get('/staff', [App\Http\Controllers\StaffController::class, 'index'])->name('staff.manage');
+    Route::delete('/staff/{user}', [StaffController::class, 'destroy'])
+        ->name('staff.destroy');
+    Route::get('/staff/{user}/update', [StaffController::class, 'update'])->name('staff.update');
+    Route::patch('/staff/{user}/edit', [StaffController::class, 'edit'])->name('staff.edit');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
