@@ -1,7 +1,21 @@
+import { useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 
 export default function ManageStaff({ auth, staffList }) {
+    useEffect(() => {
+        const interval = setInterval(() => {
+            // This asks Laravel to reload ONLY the 'staffList' prop
+            // It preserves your scroll position and doesn't flash the screen
+            router.reload({ 
+                only: ['staffList'],
+                preserveScroll: true 
+            });
+        }, 3000); // 3000ms = 3 seconds
+
+        // Cleanup: Stop the timer when you leave the page
+        return () => clearInterval(interval);
+    }, []);
     return (
         <AuthenticatedLayout
             user={auth.user}

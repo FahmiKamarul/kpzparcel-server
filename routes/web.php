@@ -22,6 +22,7 @@ Route::post('/parcel/track', [App\Http\Controllers\ParcelsController::class, 'tr
 Route::middleware(['auth','manager'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
+    Route::get('/staff', [App\Http\Controllers\StaffController::class, 'index'])->name('staff.index');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
