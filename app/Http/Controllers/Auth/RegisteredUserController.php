@@ -22,9 +22,7 @@ class RegisteredUserController extends Controller
     
     public function store(Request $request): RedirectResponse
     {
-        if ($request->user()->Role !== 'Manager') {
-            abort(403, 'Unauthorized action.');
-        }
+
         $request->validate([
             'StaffID' => 'required|string|max:255|unique:users',
             'Name' => 'required|string|max:255',
@@ -49,9 +47,7 @@ class RegisteredUserController extends Controller
     }
     public function create(): Response
     {
-        if ($request->user()->Role !== 'Manager') {
-            abort(403, 'Unauthorized action.');
-        }
+
         return Inertia::render('Auth/Register');
     }
 
