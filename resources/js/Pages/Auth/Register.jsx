@@ -26,143 +26,198 @@ export default function Register() {
     };
 
     return (
-        <GuestLayout>
-            <Head title="Register" />
+        <div className="min-h-screen bg-gray-50"> 
+            
+            <Head title="Register Staff" />
 
-            <form onSubmit={submit}>
-                {/* --- StaffID --- */}
-                <div>
-                    <InputLabel htmlFor="StaffID" value="Staff ID" />
-
-                    <TextInput
-                        id="StaffID"
-                        name="StaffID"
-                        value={data.StaffID}
-                        className="mt-1 block w-full"
-                        isFocused={true}
-                        onChange={(e) => setData('StaffID', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.StaffID} className="mt-2" />
+            {/* 1. HEADER - FULL WIDTH */}
+            <header className="bg-blue-600 shadow-xl"> 
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center h-16">
+                        {/* Logo / Title */}
+                        <div className="flex-shrink-0">
+                            <h1 className="text-white text-xl font-bold">
+                                KPZ Parcel Management System
+                            </h1>
+                        </div>
+                    </div>
                 </div>
+            </header>
 
-                {/* --- Name --- */}
-                <div className="mt-4">
-                    <InputLabel htmlFor="Name" value="Name" />
+            {/* 2. MAIN CONTENT - CENTERED FORM */}
+            <div className="py-12 flex items-center justify-center">
+                
+                <div className="max-w-xl w-full mx-auto">
+                    
+                    {/* --- Form Header (Below main site header) --- */}
+                    <div className="mb-8 text-center">
+                        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Register New Staff</h1>
+                        <p className="text-gray-500 text-md">Enter the required details to create a new staff account.</p>
+                    </div>
 
-                    <TextInput
-                        id="Name"
-                        name="Name"
-                        value={data.Name}
-                        className="mt-1 block w-full"
-                        autoComplete="name"
-                        onChange={(e) => setData('Name', e.target.value)}
-                        required
-                    />
+                    {/* --- 3. MAIN FORM CONTAINER: White Card --- */}
+                    <div className="bg-white p-8 lg:p-10 rounded-xl shadow-2xl border border-gray-100">
 
-                    <InputError message={errors.Name} className="mt-2" />
+                        <form onSubmit={submit} className="space-y-6">
+
+                            {/* --- BASIC INFORMATION GROUP --- */}
+                            <div className="space-y-5 border-b pb-6">
+                                <h2 className="text-xl font-bold text-gray-700">Personal & Contact Info</h2>
+
+                                {/* StaffID Input */}
+                                <div>
+                                    <label htmlFor="StaffID" className="block text-sm font-medium text-gray-700 mb-1">Staff ID</label>
+                                    <TextInput
+                                        id="StaffID"
+                                        name="StaffID"
+                                        value={data.StaffID}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                                        isFocused={true}
+                                        onChange={(e) => setData('StaffID', e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.StaffID} className="mt-2" />
+                                </div>
+
+                                {/* Name Input */}
+                                <div>
+                                    <label htmlFor="Name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <TextInput
+                                        id="Name"
+                                        name="Name"
+                                        value={data.Name}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                                        autoComplete="name"
+                                        onChange={(e) => setData('Name', e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.Name} className="mt-2" />
+                                </div>
+
+                                {/* PhoneNum Input */}
+                                <div>
+                                    <label htmlFor="PhoneNum" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                    <TextInput
+                                        id="PhoneNum"
+                                        name="PhoneNum"
+                                        value={data.PhoneNum}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                                        onChange={(e) => setData('PhoneNum', e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.PhoneNum} className="mt-2" />
+                                </div>
+
+                                {/* Address Input */}
+                                <div>
+                                    <label htmlFor="Address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                    <TextInput
+                                        id="Address"
+                                        name="Address"
+                                        value={data.Address}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                                        onChange={(e) => setData('Address', e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.Address} className="mt-2" />
+                                </div>
+
+                                {/* Role Dropdown (with Placeholder) */}
+                                <div>
+                                    <label htmlFor="Role" className="block text-sm font-medium text-gray-700 mb-1">Assigned Role</label>
+                                    <div className="relative">
+                                        <select
+                                            id="Role"
+                                            name="Role"
+                                            value={data.Role}
+                                            onChange={(e) => setData('Role', e.target.value)}
+                                            className="block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 appearance-none pr-10 transition duration-150"
+                                            required
+                                        >
+                                            <option value="" disabled hidden>Select a Role</option>
+                                            <option value="Staff">Staff</option>
+                                            <option value="Manager">Manager</option>
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                                            <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                                        </div>
+                                    </div>
+                                    <InputError message={errors.Role} className="mt-2" />
+                                </div>
+                            </div>
+
+
+                            {/* --- SECURITY GROUP --- */}
+                            <div className="space-y-5 pt-4">
+                                <h2 className="text-xl font-bold text-gray-700">Security & Credentials</h2>
+
+                                {/* Password Input */}
+                                <div>
+                                    <label htmlFor="Password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                    <TextInput
+                                        id="Password"
+                                        type="password"
+                                        name="Password"
+                                        value={data.Password}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                                        autoComplete="new-password"
+                                        onChange={(e) => setData('Password', e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.Password} className="mt-2" />
+                                </div>
+
+                                {/* Confirm Password Input */}
+                                <div>
+                                    <label htmlFor="Password_confirmation" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                                    <TextInput
+                                        id="Password_confirmation"
+                                        type="password"
+                                        name="Password_confirmation"
+                                        value={data.Password_confirmation}
+                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                                        autoComplete="new-password"
+                                        onChange={(e) => setData('Password_confirmation', e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.Password_confirmation} className="mt-2" />
+                                </div>
+                            </div>
+
+                            {/* --- ACTIONS --- */}
+                            <div className="flex items-center justify-between pt-6">
+                                
+                                {/* 1. Cancel/Back Button (Grey) */}
+                                <Link
+                                    href={route('staff.manage')} // Replace with the actual route to your staff list/previous page
+                                    className="px-8 py-3 mr-4 bg-gray-300 text-gray-700 font-semibold text-lg rounded-full shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200"
+                                >
+                                    Cancel
+                                </Link>
+
+                                <div className="flex items-center">
+                                    {/* Already Registered Link 
+                                    <Link
+                                        href={route('login')}
+                                        className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors underline mr-4"
+                                    >
+                                        Already registered?
+                                    </Link> */}
+
+                                    {/* 2. Register Button (Primary) */}
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="px-8 py-3 bg-blue-600 text-white font-semibold text-lg rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white transition-all duration-200"
+                                    >
+                                        {processing ? 'REGISTERING...' : 'REGISTER STAFF'}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-
-                {/* --- PhoneNum --- */}
-                <div className="mt-4">
-                    <InputLabel htmlFor="PhoneNum" value="Phone Number" />
-
-                    <TextInput
-                        id="PhoneNum"
-                        name="PhoneNum"
-                        value={data.PhoneNum}
-                        className="mt-1 block w-full"
-                        onChange={(e) => setData('PhoneNum', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.PhoneNum} className="mt-2" />
-                </div>
-
-                {/* --- Address --- */}
-                <div className="mt-4">
-                    <InputLabel htmlFor="Address" value="Address" />
-
-                    <TextInput
-                        id="Address"
-                        name="Address"
-                        value={data.Address}
-                        className="mt-1 block w-full"
-                        onChange={(e) => setData('Address', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.Address} className="mt-2" />
-                </div>
-
-                {/* --- Role --- */}
-                <div className="mt-4">
-                    <InputLabel htmlFor="Role" value="Role" />
-
-                    {/* I used a simple Text Input, but you might want a Dropdown later */}
-                    <TextInput
-                        id="Role"
-                        name="Role"
-                        value={data.Role}
-                        className="mt-1 block w-full"
-                        placeholder="e.g. Staff or Manager"
-                        onChange={(e) => setData('Role', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.Role} className="mt-2" />
-                </div>
-
-                {/* --- Password --- */}
-                <div className="mt-4">
-                    <InputLabel htmlFor="Password" value="Password" />
-
-                    <TextInput
-                        id="Password"
-                        type="password"
-                        name="Password"
-                        value={data.Password}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) => setData('Password', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.Password} className="mt-2" />
-                </div>
-
-                {/* --- Confirm Password --- */}
-                <div className="mt-4">
-                    <InputLabel htmlFor="Password_confirmation" value="Confirm Password" />
-
-                    <TextInput
-                        id="Password_confirmation"
-                        type="password"
-                        name="Password_confirmation"
-                        value={data.Password_confirmation}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) => setData('Password_confirmation', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.Password_confirmation} className="mt-2" />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Already registered?
-                    </Link>
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestLayout>
+            </div>
+        </div>
     );
 }

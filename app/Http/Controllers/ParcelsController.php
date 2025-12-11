@@ -14,7 +14,13 @@ class ParcelsController extends Controller
 
         $trackingNum = $request->input('TrackingNum');
 
-        $parcel = Parcel::with(['courier', 'staff'])->findOrFail($trackingNum);
+        $parcel = Parcel::with(['courier', 'staff'])->find($trackingNum);
+
+        if (!$parcel) {
+            return back()->withErrors([
+                'TrackingNum' => 'Tracking number not found.',
+            ]);
+        }
         return Inertia::render('Parcel/Track', [
             'parcel' => $parcel
         ]);

@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import Barcode from 'react-barcode'; // 1. Import the library
 
 export default function Track({ parcel }) {
     return (
@@ -7,10 +8,23 @@ export default function Track({ parcel }) {
 
             <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
                 {/* Header */}
-                <div className="bg-blue-600 p-6 text-white">
+                <div className="bg-blue-600 p-6 text-white text-center">
                     <h1 className="text-2xl font-bold">Parcel Status</h1>
                     <p className="opacity-90">Tracking Number: {parcel.TrackingNum}</p>
                 </div>
+
+                {/* Barcode Section */}
+                {/* We verify TrackingNum exists before rendering to avoid errors */}
+                {parcel.TrackingNum && (
+                    <div className="flex justify-center py-6 border-b border-gray-100">
+                        <Barcode 
+                            value={parcel.TrackingNum} 
+                            width={2}
+                            height={60}
+                            displayValue={false} // Set to true if you want the numbers shown below the bars
+                        />
+                    </div>
+                )}
 
                 {/* Parcel Details */}
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -22,7 +36,6 @@ export default function Track({ parcel }) {
                     <div>
                         <h3 className="text-gray-500 text-sm uppercase tracking-wider font-semibold">Status</h3>
                         <span className="inline-block px-3 py-1 mt-1 text-sm font-semibold text-green-800 bg-green-100 rounded-full">
-                            {/* If you have a status column in DB, use {parcel.Status} here */}
                             {parcel.Status}
                         </span>
                     </div>
@@ -39,7 +52,7 @@ export default function Track({ parcel }) {
                         <p className="text-lg font-medium">{parcel.DateArrive}</p>
                     </div>
                     
-                     <div>
+                    <div>
                         <h3 className="text-gray-500 text-sm uppercase tracking-wider font-semibold">Weight</h3>
                         <p className="text-lg font-medium">{parcel.Weight} kg</p>
                     </div>

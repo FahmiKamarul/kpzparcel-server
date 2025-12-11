@@ -23,19 +23,12 @@ export default function Welcome({ auth }) {
                             {/* Logo / Title */}
                             <div className="flex-shrink-0">
                                 <h1 className="text-white text-2xl font-bold leading-tight text-center sm:text-left">
-                                    KPZ Parcel Management<br />System
+                                    KPZ Parcel Management System
                                 </h1>
                             </div>
 
                             {/* Right Actions */}
                             <div className="flex items-center space-x-6">
-                                <Link
-                                    href="/"
-                                    className="text-white text-lg font-semibold hover:text-gray-200"
-                                >
-                                    Parcel
-                                </Link>
-                                <div className="h-8 w-px bg-blue-300 mx-2"></div>
                                 {auth.user ? (
                                     <Link
                                         href={route('dashboard')}
@@ -48,7 +41,7 @@ export default function Welcome({ auth }) {
                                         href={route('login')}
                                         className="text-white text-lg font-semibold hover:text-gray-200 flex items-center gap-2"
                                     >
-                                        Login <span className="text-xl">&rarr;</span>
+                                        Staff Login <span className="text-xl">&rarr;</span>
                                     </Link>
                                 )}
                             </div>

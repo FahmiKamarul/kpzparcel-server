@@ -21,7 +21,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             <div className="shrink-0 flex items-center">
                                 <Link href="/">
                                     <h1 className="text-white text-xl font-bold leading-tight">
-                                        KPZ Parcel Management<br />System
+                                        KPZ Parcel Management System
                                     </h1>
                                 </Link>
                             </div>
@@ -32,15 +32,20 @@ export default function AuthenticatedLayout({ header, children }) {
                             <NavLink
                                 href={route('dashboard')}
                                 active={route().current('dashboard')}
-                                className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
+                                className={
+                                    "text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white " +
+                                    (route().current('dashboard') ? "!text-white !border-white" : "")
+                                }
                             >
                                 Home
                             </NavLink>
                             <NavLink
                                 href={route('staff.manage')}
                                 active={route().current('staff.manage')}
-                                className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
-                            >
+                                className={
+                                    "text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white " +
+                                    (route().current('staff.manage') ? "!text-white !border-white" : "")
+                                }                            >
                                 Staff
                             </NavLink>
                             <NavLink
