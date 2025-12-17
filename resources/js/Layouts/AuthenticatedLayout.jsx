@@ -40,6 +40,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 Home
                             </NavLink>
                             <NavLink
+                                
                                 href={route('staff.manage')}
                                 active={route().current('staff.manage')}
                                 className={
@@ -49,8 +50,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                 Staff
                             </NavLink>
                             <NavLink
-                                href="#"
-                                active={false}
+                                href={route('parcels.manage')}
+                                active={route().current('parcels.manage')}
                                 className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
                             >
                                 Parcel

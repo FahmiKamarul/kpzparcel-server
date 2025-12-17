@@ -7,30 +7,62 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        // 1. Get Counts
-        $totalStaff = User::count(); 
-        $totalParcels = Parcel::count();
-         
-        // Adjust 'Collected' string to match your DB exactly
-        $collectedParcels = Parcel::where('Status', 'Collected')->count(); 
-        $uncollectedParcels = $totalParcels - $collectedParcels;
+        // 1. Determine the Date Filter (Default to Now if not provided)
+        // Expected format from HTML input: "YYYY-MM"
+        $filterDate = $request->input('date') 
+            ? Carbon::createFromFormat('Y-m', $request->input('date')) 
+            : Carbon::now();
+
+        $month = $filterDate->month;
+        $year = $filterDate->year;
+        $monthName = $filterDate->format('F Y'); // e.g., "December 2025"
+
+        // 2. Filter Stats by Selected Month & Year
+        $baseQuery = Parcel::whereYear('DateArrive', $year)->whereMonth('DateArrive', $month);
         
-        // 2. Calculate Income
-        $totalIncome = Parcel::sum('Price');
-    
-        // 3. Prepare Chart Data (Mock data for now)
-        $chartData = [
-            'labels' => ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-            'novSales' => [100, 300, 500, 200], 
-            'decSales' => [150, 600, 350, 700], 
-        ];
-    
+        $totalParcels = (clone $baseQuery)->count();
+        $collectedParcels = (clone $baseQuery)->where('Status', 'Collected')->count();
+        $uncollectedParcels = $totalParcels - $collectedParcels;
+        $totalIncome = (clone $baseQuery)->sum('Price');
+        
+        // Staff is usually global, not monthly, but you can filter if needed.
+        // For now, we keep Total Staff as a global count.
+        $totalStaff = User::count(); 
+
+        // 3. CHART LOGIC: Calculate Weekly Sales for ONLY the selected Month
+        $weeklySales = [0, 0, 0, 0]; // [Week 1, Week 2, Week 3, Week 4]
+
+        $parcels = (clone $baseQuery)->get(['DateArrive', 'Price']);
+
+        foreach ($parcels as $parcel) {
+            if (!$parcel->DateArrive) continue;
+            
+            $day = Carbon::parse($parcel->DateArrive)->day;
+
+            // Sort into weekly buckets
+            if ($day <= 7) {
+                $weeklySales[0] += $parcel->Price;
+            } elseif ($day <= 14) {
+                $weeklySales[1] += $parcel->Price;
+            } elseif ($day <= 21) {
+                $weeklySales[2] += $parcel->Price;
+            } else {
+                $weeklySales[3] += $parcel->Price; // Week 4+
+            }
+        }
+
+        // 4. Prepare Data
         return Inertia::render('Dashboard', [
+            // Pass the current filter back so the input stays filled
+            'filters' => [
+                'date' => $filterDate->format('Y-m'),
+            ],
             'stats' => [
                 'totalStaff' => $totalStaff,
                 'totalParcels' => $totalParcels,
@@ -38,7 +70,11 @@ class DashboardController extends Controller
                 'uncollected' => $uncollectedParcels,
                 'income' => $totalIncome,
             ],
-            'chartData' => $chartData
+            'chartData' => [
+                'labels' => ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                'label' => $monthName . ' Sales',
+                'data' => $weeklySales,
+            ]
         ]);
     }
 }

@@ -39,7 +39,7 @@ Route::middleware(['auth','manager'])->group(function () {
         ->name('verification.notice');
 
 });
-        
+  
 Route::middleware('auth')->group(function () {
     
     Route::get('register', [RegisteredUserController::class, 'create'])

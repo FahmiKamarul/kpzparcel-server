@@ -2,10 +2,18 @@
 
 namespace App\Http\Controllers;
 use App\Models\Parcel;
+use App\Models\Courier;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 class ParcelsController extends Controller
 {
+    public function index()
+    {
+        $parcels = Parcel::latest()->get(); 
+        return Inertia::render('Parcel/ManageParcel', [
+        'parcels' => $parcels,
+        ]);
+    }
     public function track(Request $request)
     {
         $request->validate([
@@ -24,6 +32,56 @@ class ParcelsController extends Controller
         return Inertia::render('Parcel/Track', [
             'parcel' => $parcel
         ]);
+    }
+    public function store(Request $request)
+    {
+
+        $validated = $request->validate([
+            'TrackingNum' => 'required|unique:parcel,TrackingNum|max:255',
+            'CourierID' => 'required|exists:courier,CourierID',
+            'StaffID' => 'required|exists:users,StaffID',
+            'CustomerName' => 'required|string',
+            'ShelfNum' => 'required|integer',
+            'Weight' => 'required|numeric',
+            'Price' => 'required|numeric',
+            'DateArrive' => 'required|date',
+        ]);
+        $validatedData['Status'] = 'Ready';
+        $parcel = Parcel::create($validated);
+
+        return redirect()->back()->with('success', 'Parcel inserted successfully!');
+    }
+    public function create()
+    {
+        // Fetch all couriers from the database
+        $courierOptions = Courier::all(['CourierID', 'CourierName']); // Select only the needed columns
+        
+        return Inertia::render('Parcel/Create', [
+            'courierOptions' => $courierOptions,
+        ]);
+    }
+    public function show($id)
+    {
+
+        $parcel = Parcel::with(['courier', 'staff'])->findOrFail($id);
+        return new ParcelResource($parcel);
+    }
+    public function update(Request $request, $id)
+    {
+        $parcel = Parcel::findOrFail($id);
+
+        $parcel->update($request->all());
+
+        return new ParcelResource($parcel);
+    }
+
+
+    public function destroy($id)
+    {
+        $parcel = Parcel::findOrFail($id);
+        $parcel->delete();
+
+        return response()->json(['message' => 'Parcel deleted successfully']);
     }
     
 }

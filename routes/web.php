@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\ParcelsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Models\Parcel;
@@ -28,6 +29,10 @@ Route::middleware(['auth','manager'])->group(function () {
         ->name('staff.destroy');
     Route::get('/staff/{user}/update', [StaffController::class, 'update'])->name('staff.update');
     Route::patch('/staff/{user}/edit', [StaffController::class, 'edit'])->name('staff.edit');
+    Route ::get('/parcels', [App\Http\Controllers\ParcelsController::class, 'index'])->name('parcels.manage');
+
+    Route::get('/parcels/create', [ParcelsController::class, 'create'])->name('parcel.create');
+    Route::post('/parcels', [ParcelsController::class, 'store'])->name('parcel.store');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

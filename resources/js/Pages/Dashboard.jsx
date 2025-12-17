@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -15,18 +15,26 @@ import {
 import { Line, Doughnut } from 'react-chartjs-2';
 
 // Register ChartJS components
-ChartJS.register(
-    CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler);
 
-export default function Dashboard({ auth, stats, chartData }) {
+export default function Dashboard({ auth, stats, chartData, filters }) {
     
-    // --- Chart Configurations ---
+    // --- 1. Handle Filter Change ---
+    const handleDateChange = (e) => {
+        // Reload page with new date param
+        router.get(route('dashboard'), { date: e.target.value }, {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['stats', 'chartData', 'filters'] // Only reload data, not layout
+        });
+    };
+
+    // --- 2. Chart Configurations ---
     const lineChartOptions = {
         responsive: true,
         plugins: {
             legend: { position: 'top' },
-            title: { display: true, text: 'This Month Sales vs Last Month Sales' },
+            title: { display: true, text: 'Sales Performance' },
         },
         scales: {
             y: { beginAtZero: true }
@@ -37,25 +45,17 @@ export default function Dashboard({ auth, stats, chartData }) {
         labels: chartData.labels,
         datasets: [
             {
-                label: 'November',
-                data: chartData.novSales,
+                label: chartData.label, // e.g. "December 2025 Sales"
+                data: chartData.data,
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                fill: true,
-                tension: 0.4,
-            },
-            {
-                label: 'December',
-                data: chartData.decSales,
-                borderColor: 'rgb(255, 99, 132)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
                 fill: true,
                 tension: 0.4,
             },
         ],
     };
 
-    // Data for Doughnut Charts
+    // Doughnut Data (unchanged)
     const uncollectedData = {
         labels: ['Uncollected', 'Total'],
         datasets: [{
@@ -80,38 +80,44 @@ export default function Dashboard({ auth, stats, chartData }) {
             header={<h2 className="text-xl font-semibold leading-tight text-white">Dashboard</h2>}
         >
             <Head title="Dashboard" />
-
             <div className="py-12 bg-white min-h-screen">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     
-                    {/* Header Title */}
+                    {/* Header Title & Date Picker */}
                     <div className="mb-6 text-center">
                         <h1 className="text-3xl font-bold text-gray-800">DASHBOARD</h1>
-                        <div className="mt-2 flex justify-center">
-                            <input type="date" className="border rounded-md px-3 py-1 text-gray-600" />
+                        
+                        {/* THE NEW FILTER INPUT */}
+                        <div className="mt-4 flex justify-center items-center gap-2">
+                            <label className="text-gray-600 font-bold">Filter Month:</label>
+                            <input 
+                                type="month" 
+                                value={filters.date} // Binds to URL param
+                                onChange={handleDateChange}
+                                className="border rounded-md px-4 py-2 text-gray-700 shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                            />
                         </div>
                     </div>
 
                     {/* Main Grid Layout */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         
-                        {/* LEFT COLUMN: Main Chart */}
+                        {/* LEFT: Main Sales Chart */}
                         <div className="lg:col-span-2 bg-gray-50 p-6 rounded-xl shadow-sm border">
                             <Line options={lineChartOptions} data={areaChartData} />
                         </div>
 
-                        {/* RIGHT COLUMN: KPI Cards & Donuts */}
+                        {/* RIGHT: Stats & Donuts */}
                         <div className="flex flex-col space-y-4">
                             
-                            {/* Card: Total Staff */}
+                            {/* Stats Cards (Now Filtered!) */}
                             <div className="bg-orange-200 p-4 rounded-lg shadow-sm text-center">
                                 <h3 className="font-bold text-gray-700">Total Staff :</h3>
                                 <p className="text-xl font-bold">{stats.totalStaff}</p>
                             </div>
 
-                            {/* Card: Total Parcel */}
                             <div className="bg-pink-200 p-4 rounded-lg shadow-sm text-center">
-                                <h3 className="font-bold text-gray-700">Total Parcel :</h3>
+                                <h3 className="font-bold text-gray-700">Total Parcel ({filters.date}) :</h3>
                                 <p className="text-xl font-bold">{stats.totalParcels}</p>
                             </div>
 
@@ -120,32 +126,28 @@ export default function Dashboard({ auth, stats, chartData }) {
                                 <div className="w-24 h-24">
                                     <Doughnut data={uncollectedData} options={{ cutout: '70%', plugins: { legend: { display: false } } }} />
                                 </div>
-                                <p className="text-sm mt-2 text-gray-600">Uncollected Parcel: {stats.uncollected}/{stats.totalParcels}</p>
+                                <p className="text-sm mt-2 text-gray-600">Uncollected: {stats.uncollected}</p>
                             </div>
 
-                            {/* Card: Collected Parcel */}
                             <div className="bg-green-300 p-4 rounded-lg shadow-sm text-center">
-                                <h3 className="font-bold text-gray-700">Total Collected Parcel :</h3>
+                                <h3 className="font-bold text-gray-700">Collected Parcel :</h3>
                                 <p className="text-xl font-bold">{stats.collected}</p>
                             </div>
 
-                            {/* Card: Uncollected Parcel */}
                             <div className="bg-yellow-200 p-4 rounded-lg shadow-sm text-center">
-                                <h3 className="font-bold text-gray-700">Total Uncollected Parcel :</h3>
+                                <h3 className="font-bold text-gray-700">Uncollected Parcel :</h3>
                                 <p className="text-xl font-bold">{stats.uncollected}</p>
                             </div>
 
-                            {/* Donut: Collected */}
                             <div className="bg-white p-4 rounded-lg shadow-sm border flex flex-col items-center">
                                 <div className="w-24 h-24">
                                     <Doughnut data={collectedData} options={{ cutout: '70%', plugins: { legend: { display: false } } }} />
                                 </div>
-                                <p className="text-sm mt-2 text-gray-600">Collected Parcel: {stats.collected}/{stats.totalParcels}</p>
+                                <p className="text-sm mt-2 text-gray-600">Collected: {stats.collected}</p>
                             </div>
 
-                            {/* Card: Total Income */}
                             <div className="bg-cyan-300 p-4 rounded-lg shadow-sm text-center">
-                                <h3 className="font-bold text-gray-700">Total Income:</h3>
+                                <h3 className="font-bold text-gray-700">Total Income ({filters.date}):</h3>
                                 <p className="text-xl font-bold">RM {stats.income}</p>
                             </div>
 
