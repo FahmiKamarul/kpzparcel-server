@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { getCourierLogo } from './courierUtils'; 
+import { Inertia } from '@inertiajs/inertia'; 
 
 export function ParcelCard({ parcel }) {
     const statusColor = parcel.Status === 'Collected' ? 'text-green-600' : 'text-red-600';
@@ -46,7 +47,14 @@ export function ParcelCard({ parcel }) {
                 <button className="bg-yellow-500 text-white text-xs font-semibold px-4 py-1 rounded shadow-md hover:bg-yellow-600 transition duration-150">
                     UPDATE
                 </button>
-                <button className="bg-red-500 text-white text-xs font-semibold px-4 py-1 rounded shadow-md hover:bg-red-600 transition duration-150">
+                <button 
+                    className="bg-red-500 text-white text-xs font-semibold px-4 py-1 rounded shadow-md hover:bg-red-600 transition duration-150"
+                    onClick={() => {
+                        if (window.confirm('Are you sure you want to delete this parcel?')) {
+                            Inertia.delete(route('parcel.destroy', parcel.TrackingNum));
+                        }
+                    }}
+                >
                     DELETE
                 </button>
             </div>

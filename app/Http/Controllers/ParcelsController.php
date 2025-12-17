@@ -76,12 +76,11 @@ class ParcelsController extends Controller
     }
 
 
-    public function destroy($id)
+    public function destroy(Parcel $parcel)
     {
-        $parcel = Parcel::findOrFail($id);
         $parcel->delete();
 
-        return response()->json(['message' => 'Parcel deleted successfully']);
+        return redirect()->route('parcels.manage')->with('success', 'Parcel deleted successfully!');
     }
     
 }

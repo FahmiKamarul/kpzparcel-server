@@ -1,6 +1,7 @@
 // src/Pages/ManageParcel.jsx
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useEffect } from 'react';
 import { Head,Link } from '@inertiajs/react';
 import React, { useState } from 'react'; // Added useState for search functionality
 import { ParcelCard } from '@/Components/ParcelCard'; // Make sure this is a named export or adjust import
@@ -64,7 +65,7 @@ export default function ManageParcel({ auth, parcels }) {
                     {filteredParcels.length > 0 ? (
                         filteredParcels.map((parcel) => (
                             // Use parcel.ID or a database-generated unique ID as the key
-                            <ParcelCard key={parcel.id} parcel={parcel} />
+                            <ParcelCard key={parcel.TrackingNum} parcel={parcel} />
                         ))
                     ) : (
                         // Message if no parcels match the filter

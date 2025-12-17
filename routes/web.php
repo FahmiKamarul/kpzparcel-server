@@ -33,6 +33,7 @@ Route::middleware(['auth','manager'])->group(function () {
 
     Route::get('/parcels/create', [ParcelsController::class, 'create'])->name('parcel.create');
     Route::post('/parcels', [ParcelsController::class, 'store'])->name('parcel.store');
+    Route::delete('/parcels/{parcel}', [ParcelsController::class, 'destroy'])->name('parcel.destroy');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
