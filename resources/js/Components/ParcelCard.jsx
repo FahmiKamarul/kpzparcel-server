@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { getCourierLogo } from './courierUtils'; 
-import { Inertia } from '@inertiajs/inertia'; 
+import { Inertia } from '@inertiajs/inertia';
+import { Link } from '@inertiajs/react'; 
 
 export function ParcelCard({ parcel }) {
     const statusColor = parcel.Status === 'Collected' ? 'text-green-600' : 'text-red-600';
@@ -44,9 +45,12 @@ export function ParcelCard({ parcel }) {
                 </div>
             </div>
             <div className="flex gap-2 justify-start pt-3 border-t border-gray-100 mt-auto">
-                <button className="bg-yellow-500 text-white text-xs font-semibold px-4 py-1 rounded shadow-md hover:bg-yellow-600 transition duration-150">
+                <Link
+                    href={route('parcel.edit', parcel.TrackingNum)}
+                    className="bg-yellow-500 text-white text-xs font-semibold px-4 py-1 rounded shadow-md hover:bg-yellow-600 transition duration-150"
+                >
                     UPDATE
-                </button>
+                </Link>
                 <button 
                     className="bg-red-500 text-white text-xs font-semibold px-4 py-1 rounded shadow-md hover:bg-red-600 transition duration-150"
                     onClick={() => {

@@ -51,12 +51,12 @@ class ParcelsController extends Controller
 
         return redirect()->back()->with('success', 'Parcel inserted successfully!');
     }
-    public function create()
+    public function edit(Parcel $parcel)
     {
-        // Fetch all couriers from the database
-        $courierOptions = Courier::all(['CourierID', 'CourierName']); // Select only the needed columns
+        $courierOptions = Courier::all(['CourierID', 'CourierName']);
         
-        return Inertia::render('Parcel/Create', [
+        return Inertia::render('Parcel/Update', [
+            'parcel' => $parcel,
             'courierOptions' => $courierOptions,
         ]);
     }
@@ -66,13 +66,21 @@ class ParcelsController extends Controller
         $parcel = Parcel::with(['courier', 'staff'])->findOrFail($id);
         return new ParcelResource($parcel);
     }
-    public function update(Request $request, $id)
+    public function update(Request $request, Parcel $parcel)
     {
-        $parcel = Parcel::findOrFail($id);
+        $validated = $request->validate([
+            'CourierID' => 'required|exists:courier,CourierID',
+            'StaffID' => 'required|exists:users,StaffID',
+            'CustomerName' => 'required|string',
+            'ShelfNum' => 'required|integer',
+            'Weight' => 'required|numeric',
+            'Price' => 'required|numeric',
+            'DateArrive' => 'required|date',
+        ]);
 
-        $parcel->update($request->all());
+        $parcel->update($validated);
 
-        return new ParcelResource($parcel);
+        return redirect()->route('parcels.manage')->with('success', 'Parcel updated successfully!');
     }
 
 

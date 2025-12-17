@@ -33,6 +33,8 @@ Route::middleware(['auth','manager'])->group(function () {
 
     Route::get('/parcels/create', [ParcelsController::class, 'create'])->name('parcel.create');
     Route::post('/parcels', [ParcelsController::class, 'store'])->name('parcel.store');
+    Route::get('/parcels/{parcel}/edit', [ParcelsController::class, 'edit'])->name('parcel.edit');
+    Route::patch('/parcels/{parcel}', [ParcelsController::class, 'update'])->name('parcel.update');
     Route::delete('/parcels/{parcel}', [ParcelsController::class, 'destroy'])->name('parcel.destroy');
 });
 Route::middleware('auth')->group(function () {
