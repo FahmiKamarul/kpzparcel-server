@@ -49,7 +49,7 @@ class ParcelsController extends Controller
         $validatedData['Status'] = 'Ready';
         $parcel = Parcel::create($validated);
 
-        return redirect()->back()->with('success', 'Parcel inserted successfully!');
+        return redirect()->route('parcels.manage')->with('success', 'Parcel inserted successfully!');
     }
     public function edit(Parcel $parcel)
     {
@@ -83,7 +83,13 @@ class ParcelsController extends Controller
         return redirect()->route('parcels.manage')->with('success', 'Parcel updated successfully!');
     }
 
-
+    public function create()
+    {
+        $courierOptions = Courier::all(['CourierID', 'CourierName']);
+        return Inertia::render('Parcel/Create', [
+            'courierOptions' => $courierOptions,
+        ]);
+    }
     public function destroy(Parcel $parcel)
     {
         $parcel->delete();
