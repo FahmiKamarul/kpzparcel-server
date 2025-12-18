@@ -4,17 +4,28 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 export default function Register() {
+    const [nextStaffId, setNextStaffId] = useState(null);
+
+    // Fetch the next StaffID when component mounts
+    useEffect(() => {
+        fetch(route('register.next-id'))
+            .then(res => res.json())
+            .then(data => setNextStaffId(data.next_id))
+            .catch(err => console.error('Error fetching next ID:', err));
+    }, []);
+
     // 1. Updated state to match your Database Columns exactly
     const { data, setData, post, processing, errors, reset } = useForm({
-        StaffID: '',
         Name: '',
         PhoneNum: '',
         Address: '',
         Role: '',
         Password: '',
         Password_confirmation: '',
+        profile_image: null,
     });
 
     const submit = (e) => {
@@ -53,6 +64,13 @@ export default function Register() {
                     <div className="mb-8 text-center">
                         <h1 className="text-3xl font-extrabold text-gray-900 mb-2">Register New Staff</h1>
                         <p className="text-gray-500 text-md">Enter the required details to create a new staff account.</p>
+                        {nextStaffId && (
+                            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-sm text-gray-600">
+                                    Staff ID will be assigned as: <span className="font-bold text-blue-600 text-lg">{nextStaffId}</span>
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* --- 3. MAIN FORM CONTAINER: White Card --- */}
@@ -63,21 +81,6 @@ export default function Register() {
                             {/* --- BASIC INFORMATION GROUP --- */}
                             <div className="space-y-5 border-b pb-6">
                                 <h2 className="text-xl font-bold text-gray-700">Personal & Contact Info</h2>
-
-                                {/* StaffID Input */}
-                                <div>
-                                    <label htmlFor="StaffID" className="block text-sm font-medium text-gray-700 mb-1">Staff ID</label>
-                                    <TextInput
-                                        id="StaffID"
-                                        name="StaffID"
-                                        value={data.StaffID}
-                                        className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
-                                        isFocused={true}
-                                        onChange={(e) => setData('StaffID', e.target.value)}
-                                        required
-                                    />
-                                    <InputError message={errors.StaffID} className="mt-2" />
-                                </div>
 
                                 {/* Name Input */}
                                 <div>
@@ -143,6 +146,20 @@ export default function Register() {
                                         </div>
                                     </div>
                                     <InputError message={errors.Role} className="mt-2" />
+                                </div>
+
+                                {/* Profile Image Upload */}
+                                <div>
+                                    <label htmlFor="profile_image" className="block text-sm font-medium text-gray-700 mb-1">Profile Image</label>
+                                    <input
+                                        id="profile_image"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => setData('profile_image', e.target.files[0])}
+                                        className="block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">JPG, PNG, or GIF (max 2MB)</p>
+                                    <InputError message={errors.profile_image} className="mt-2" />
                                 </div>
                             </div>
 

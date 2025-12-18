@@ -1,21 +1,31 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
 
 export default function Update({ auth, staff }) {
 
     // Initialize form with existing staff data
-    const { data, setData, patch, processing, errors } = useForm({
+    const { data, setData, processing, errors } = useForm({
         Name: staff.Name,
         PhoneNum: staff.PhoneNum,
         Address: staff.Address,
         Role: staff.Role,
-        ActiveStatus: staff.ActiveStatus,
+        ActiveStatus: staff.ActiveStatus ? 1 : 0,
+        profile_image: null,
     });
 
     const submit = (e) => {
         e.preventDefault();
-        // Send PATCH request to update
-        patch(route('staff.edit', staff.StaffID));
+        // Send PATCH request to update - router.post with _method works for file uploads
+        router.post(route('staff.edit', staff.StaffID), 
+            {
+                ...data,
+                _method: 'PATCH',
+            },
+            {
+                preserveScroll: true,
+                forceFormData: true,
+            }
+        );
     };
 
     return (
@@ -118,7 +128,56 @@ export default function Update({ auth, staff }) {
                                 {errors.Role && <div className="text-red-500 text-sm mt-1">{errors.Role}</div>}
                             </div>
 
-                            {/* Active Status Switch (Enhanced UX) */}
+                            {/* Role Dropdown */}
+                            <div>
+                                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Assigned Role</label>
+                                <div className="relative">
+                                    <select
+                                        id="role"
+                                        value={data.Role}
+                                        onChange={(e) => setData('Role', e.target.value)}
+                                        // Standardized input style for select
+                                        className="block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 appearance-none pr-10 transition duration-150"
+                                    >
+                                        <option value="Staff">Staff</option>
+                                        <option value="Manager">Manager</option>
+                                    </select>
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                                        <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+                                    </div>
+                                </div>
+                                {errors.Role && <div className="text-red-500 text-sm mt-1">{errors.Role}</div>}
+                            </div>
+
+                            {/* Profile Image Upload */}
+                            <div>
+                                <label htmlFor="profile_image" className="block text-sm font-medium text-gray-700 mb-1">Profile Image</label>
+                                {staff.profile_image && (
+                                    <div className="mb-3 flex items-center">
+                                        <img 
+                                            src={`/storage/${staff.profile_image}`} 
+                                            alt="Current Profile" 
+                                            className="w-16 h-16 rounded-lg object-cover mr-3"
+                                        />
+                                        <p className="text-sm text-gray-600">Current image</p>
+                                    </div>
+                                )}
+                                <input
+                                    id="profile_image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setData('profile_image', e.target.files[0])}
+                                    className="block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 transition duration-150"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">JPG, PNG, or GIF (max 2MB). Leave empty to keep current image.</p>
+                                {errors.profile_image && <div className="text-red-500 text-sm mt-1">{errors.profile_image}</div>}
+                            </div>
+                        </div>
+
+                        {/* --- ROLE & STATUS GROUP --- */}
+                        <div className="space-y-6 pt-4">
+                            <h2 className="text-xl font-bold text-gray-700 border-b pb-2 mb-4">System Status</h2>
+
                             <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-inner">
                                 <label className="text-base font-semibold text-gray-800 flex-grow">
                                     Active Status
