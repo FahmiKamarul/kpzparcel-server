@@ -29,71 +29,86 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         {/* Center Links */}
                         <div className="hidden sm:flex sm:items-center sm:space-x-8">
-                            <NavLink
-                                href={route('dashboard')}
-                                active={route().current('dashboard')}
-                                className={
-                                    "text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white " +
-                                    (route().current('dashboard') ? "!text-white !border-white" : "")
-                                }
-                            >
-                                Home
-                            </NavLink>
-                            <NavLink
-                                
-                                href={route('staff.manage')}
-                                active={route().current('staff.manage')}
-                                className={
-                                    "text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white " +
-                                    (route().current('staff.manage') ? "!text-white !border-white" : "")
-                                }                            >
-                                Staff
-                            </NavLink>
-                            <NavLink
-                                href={route('parcels.manage')}
-                                active={route().current('parcels.manage')}
-                                className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
-                            >
-                                Parcel
-                            </NavLink>
+                            {user && (
+                                <NavLink
+                                    href={route('dashboard')}
+                                    active={route().current('dashboard')}
+                                    className={
+                                        "text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white " +
+                                        (route().current('dashboard') ? "!text-white !border-white" : "")
+                                    }
+                                >
+                                    Home
+                                </NavLink>
+                            )}
+                            {user && user.Role === 'Manager' && (
+                                <NavLink
+                                    
+                                    href={route('staff.manage')}
+                                    active={route().current('staff.manage')}
+                                    className={
+                                        "text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white " +
+                                        (route().current('staff.manage') ? "!text-white !border-white" : "")
+                                    }                            >
+                                    Staff
+                                </NavLink>
+                            )}
+                            {user && (
+                                <NavLink
+                                    href={route('parcels.manage')}
+                                    active={route().current('parcels.manage')}
+                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
+                                >
+                                    Parcel
+                                </NavLink>
+                            )}
                         </div>
 
                         {/* Right User Profile */}
                         <div className="hidden sm:flex sm:items-center sm:ml-6">
-                            <div className="ml-3 relative">
-                                <Dropdown>
-                                    <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white hover:text-gray-200 focus:outline-none transition ease-in-out duration-150"
-                                            >
-                                                <div className="text-right mr-2">
-                                                    <div className="text-xs font-bold uppercase">{user.StaffID}</div>
-                                                    <div className="text-base font-bold">{user.Name}</div>
-                                                </div>
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={2}
-                                                    stroke="currentColor"
-                                                    className="w-6 h-6"
+                            {user ? (
+                                <div className="ml-3 relative">
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <span className="inline-flex rounded-md">
+                                                <button
+                                                    type="button"
+                                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white hover:text-gray-200 focus:outline-none transition ease-in-out duration-150"
                                                 >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </Dropdown.Trigger>
+                                                    <div className="text-right mr-2">
+                                                        <div className="text-xs font-bold uppercase">{user.StaffID}</div>
+                                                        <div className="text-base font-bold">{user.Name}</div>
+                                                    </div>
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={2}
+                                                        stroke="currentColor"
+                                                        className="w-6 h-6"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                                                    </svg>
+                                                </button>
+                                            </span>
+                                        </Dropdown.Trigger>
 
-                                    <Dropdown.Content>
-                                        <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
-                                        <Dropdown.Link href={route('logout')} method="post" as="button">
-                                            Log Out
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
-                                </Dropdown>
-                            </div>
+                                        <Dropdown.Content>
+                                            <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                                            <Dropdown.Link href={route('logout')} method="post" as="button">
+                                                Log Out
+                                            </Dropdown.Link>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+                                </div>
+                            ) : (
+                                <Link
+                                    href={route('login')}
+                                    className="text-white text-lg font-semibold hover:text-gray-200 flex items-center gap-2"
+                                >
+                                    Staff Login <span className="text-xl">&rarr;</span>
+                                </Link>
+                            )}
                         </div>
 
                         {/* Hamburger */}
@@ -125,37 +140,48 @@ export default function AuthenticatedLayout({ header, children }) {
 
                 <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                     <div className="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                            Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink href={route('staff.manage')} active={route().current('staff.manage')}>
-                            Staff
-                        </ResponsiveNavLink>
+                        {user && (
+                            <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
+                                Dashboard
+                            </ResponsiveNavLink>
+                        )}
+                        {user && user.Role === 'Manager' && (
+                            <ResponsiveNavLink href={route('staff.manage')} active={route().current('staff.manage')}>
+                                Staff
+                            </ResponsiveNavLink>
+                        )}
+                        {user && (
+                            <ResponsiveNavLink href={route('parcels.manage')} active={route().current('parcels.manage')}>
+                                Parcel
+                            </ResponsiveNavLink>
+                        )}
                     </div>
 
-                    <div className="border-t border-gray-200 pb-1 pt-4">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
-                                {user.name}
+                    {user && (
+                        <div className="border-t border-gray-200 pb-1 pt-4">
+                            <div className="px-4">
+                                <div className="text-base font-medium text-gray-800">
+                                    {user.Name}
+                                </div>
+                                <div className="text-sm font-medium text-gray-500">
+                                    {user.StaffID}
+                                </div>
                             </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
-                        </div>
 
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route('logout')}
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
+                            <div className="mt-3 space-y-1">
+                                <ResponsiveNavLink href={route('profile.edit')}>
+                                    Profile
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    method="post"
+                                    href={route('logout')}
+                                    as="button"
+                                >
+                                    Log Out
+                                </ResponsiveNavLink>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </nav>
 

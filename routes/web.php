@@ -29,6 +29,8 @@ Route::middleware(['auth','manager'])->group(function () {
         ->name('staff.destroy');
     Route::get('/staff/{user}/update', [StaffController::class, 'update'])->name('staff.update');
     Route::patch('/staff/{user}/edit', [StaffController::class, 'edit'])->name('staff.edit');
+});
+Route::middleware('auth')->group(function () {
     Route ::get('/parcels', [App\Http\Controllers\ParcelsController::class, 'index'])->name('parcels.manage');
 
     Route::get('/parcels/create', [ParcelsController::class, 'create'])->name('parcel.create');
@@ -36,8 +38,6 @@ Route::middleware(['auth','manager'])->group(function () {
     Route::get('/parcels/{parcel}/edit', [ParcelsController::class, 'edit'])->name('parcel.edit');
     Route::patch('/parcels/{parcel}', [ParcelsController::class, 'update'])->name('parcel.update');
     Route::delete('/parcels/{parcel}', [ParcelsController::class, 'destroy'])->name('parcel.destroy');
-});
-Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

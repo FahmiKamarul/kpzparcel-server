@@ -1,10 +1,11 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 export default function Welcome({ auth }) {
     const { data, setData, post, processing, errors } = useForm({
         TrackingNum: '',
     });
-
+    const user = usePage().props.auth.user;
     const submit = (e) => {
         e.preventDefault();
         post(route('parcel.track'));
@@ -13,44 +14,10 @@ export default function Welcome({ auth }) {
     return (
         <>
             <Head title="Welcome" />
-            <div className="min-h-screen bg-white flex flex-col">
-
-                {/* Header */}
-                <header className="bg-blue-500 w-full">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between items-center h-20">
-
-                            {/* Logo / Title */}
-                            <div className="flex-shrink-0">
-                                <h1 className="text-white text-2xl font-bold leading-tight text-center sm:text-left">
-                                    KPZ Parcel Management System
-                                </h1>
-                            </div>
-
-                            {/* Right Actions */}
-                            <div className="flex items-center space-x-6">
-                                {auth.user ? (
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="text-white text-lg font-semibold hover:text-gray-200 flex items-center gap-2"
-                                    >
-                                        Dashboard <span className="text-xl">&rarr;</span>
-                                    </Link>
-                                ) : (
-                                    <Link
-                                        href={route('login')}
-                                        className="text-white text-lg font-semibold hover:text-gray-200 flex items-center gap-2"
-                                    >
-                                        Staff Login <span className="text-xl">&rarr;</span>
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </header>
+            <div className="bg-white flex flex-col p-4">
 
                 {/* Main Content */}
-                <main className="flex-grow flex flex-col items-center justify-center p-4">
+                <div className="flex-grow flex flex-col items-center justify-center">
 
                     {/* Parcel Link / Icon Placeholder */}
                     <div className="mb-8">
@@ -95,8 +62,10 @@ export default function Welcome({ auth }) {
                         </button>
 
                     </form>
-                </main>
+                </div>
             </div>
         </>
     );
 }
+
+Welcome.layout = (page) => <AuthenticatedLayout>{page}</AuthenticatedLayout>;
