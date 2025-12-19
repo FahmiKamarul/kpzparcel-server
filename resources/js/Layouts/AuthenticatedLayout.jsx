@@ -57,7 +57,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink
                                     href={route('parcels.manage')}
                                     active={route().current('parcels.manage')}
-                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
+                                    className={"text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"+
+                                        (route().current('staff.manage') ? "!text-white !border-white" : "")}
                                 >
                                     Parcel
                                 </NavLink>
@@ -94,7 +95,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Dropdown.Trigger>
 
                                         <Dropdown.Content>
-                                            <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                                            {/*<Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>*/}
                                             <Dropdown.Link href={route('logout')} method="post" as="button">
                                                 Log Out
                                             </Dropdown.Link>
@@ -169,9 +170,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
 
                             <div className="mt-3 space-y-1">
-                                <ResponsiveNavLink href={route('profile.edit')}>
+                                {/* <ResponsiveNavLink href={route('profile.edit')}>
                                     Profile
-                                </ResponsiveNavLink>
+                                </ResponsiveNavLink> */}
                                 <ResponsiveNavLink
                                     method="post"
                                     href={route('logout')}
