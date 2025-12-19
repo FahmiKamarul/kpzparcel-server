@@ -10,6 +10,16 @@ export default function Create({ auth, courierOptions }) {
     // 1. Determine the default CourierID based on the options, or fall back to an empty string
     const defaultCourierID = courierOptions.length > 0 ? courierOptions[0].CourierID : '';
 
+    // 2. Function to calculate price based on weight
+    // First 2kg: RM2, then RM1 for each 0.25kg quadrant
+    const calculatePrice = (weight) => {
+        if (!weight || weight <= 0) return 0;
+        if (weight <= 2) return 2;
+        const additionalWeight = weight - 2;
+        const particiant = Math.ceil(additionalWeight );
+        return 2 + particiant*0.5;
+    };
+
     const { data, setData, post, processing, errors, reset } = useForm({
         TrackingNum: '',
         CourierID: defaultCourierID, // Use the dynamically determined default
@@ -22,7 +32,13 @@ export default function Create({ auth, courierOptions }) {
         Status: 'Pending',
     });
     
-    // ... (submit function remains the same) ...
+    // Handle weight change and auto-calculate price
+    const handleWeightChange = (weight) => {
+        setData('Weight', weight);
+        const calculatedPrice = calculatePrice(parseFloat(weight));
+        setData('Price', calculatedPrice);
+    };
+    
     const submit = (e) => {
         e.preventDefault();
         post(route('parcel.store'), {
@@ -136,7 +152,7 @@ export default function Create({ auth, courierOptions }) {
                                         step="0.01"
                                         min="0"
                                         value={data.Weight}
-                                        onChange={(e) => setData('Weight', e.target.value)}
+                                        onChange={(e) => handleWeightChange(e.target.value)}
                                         className={inputClass}
                                     />
                                     {errors.Weight && <div className="text-red-500 text-xs mt-1">{errors.Weight}</div>}
@@ -151,9 +167,10 @@ export default function Create({ auth, courierOptions }) {
                                         step="0.01"
                                         min="0"
                                         value={data.Price}
-                                        onChange={(e) => setData('Price', e.target.value)}
-                                        className={inputClass}
+                                        readOnly
+                                        className={`${inputClass} bg-gray-100 cursor-not-allowed`}
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">Calculated automatically based on weight</p>
                                     {errors.Price && <div className="text-red-500 text-xs mt-1">{errors.Price}</div>}
                                 </div>
 
