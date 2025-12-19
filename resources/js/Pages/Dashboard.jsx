@@ -57,18 +57,20 @@ export default function Dashboard({ auth, stats, chartData, filters }) {
 
     // Doughnut Data (unchanged)
     const uncollectedData = {
-        labels: ['Uncollected', 'Total'],
+        labels: ['Uncollected', 'Remaining'],
         datasets: [{
-            data: [stats.uncollected, stats.totalParcels],
+            // Subtract uncollected from total to get the "empty" part of the ring
+            data: [stats.uncollected, stats.totalParcels - stats.uncollected], 
             backgroundColor: ['#FF6384', '#EEEEEE'],
             borderWidth: 0,
         }]
     };
 
     const collectedData = {
-        labels: ['Collected', 'Total'],
+        labels: ['Collected', 'Remaining'],
         datasets: [{
-            data: [stats.collected, stats.totalParcels],
+            // Subtract collected from total to get the "empty" part of the ring
+            data: [stats.collected, stats.totalParcels - stats.collected],
             backgroundColor: ['#4BC0C0', '#EEEEEE'],
             borderWidth: 0,
         }]
@@ -77,7 +79,6 @@ export default function Dashboard({ auth, stats, chartData, filters }) {
     return (
         <AuthenticatedLayout
     user={auth.user}
-    header={<h2 className="text-xl font-semibold leading-tight text-white">Dashboard Overview</h2>}
 >
     <Head title="Dashboard" />
     <div className="py-6 bg-gray-70 min-h-screen">
