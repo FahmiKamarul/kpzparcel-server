@@ -13,17 +13,22 @@ export default function ManageParcel({ auth, parcels }) {
     
     // State for Search Input (Optional, but good for interactive search)
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // State for Status Filter
+    const [statusFilter, setStatusFilter] = useState('all');
 
-    // Filter parcels based on the search term (Tracking Number)
-    const filteredParcels = parcels.filter(parcel =>
-        parcel.TrackingNum.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filter parcels based on the search term (Tracking Number) and status
+    const filteredParcels = parcels.filter(parcel => {
+        const matchesSearch = parcel.TrackingNum.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || parcel.Status.toLowerCase() === statusFilter.toLowerCase();
+        return matchesSearch && matchesStatus;
+    });
 
     return (
         // Pass the required props to the AuthenticatedLayout
         <AuthenticatedLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Parcel Management</h2>}
+
         >
             <Head title="Parcel Management" />
 
@@ -31,8 +36,8 @@ export default function ManageParcel({ auth, parcels }) {
             <div className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-100 min-h-screen">
                 
                 {/* Search Bar and Add Parcel Button */}
-                <div className="flex justify-start items-center mb-6">
-                    <div className="relative w-96 mr-4">
+                <div className="flex justify-start items-center mb-6 gap-4">
+                    <div className="relative w-96">
                         <input
                             type="text"
                             placeholder="Tracking Number"
@@ -51,13 +56,47 @@ export default function ManageParcel({ auth, parcels }) {
                         // Set the destination URL using the Laravel route helper
                         href={route('parcel.create')}
                         // Apply all the existing button styling classes to the Link component
-                        className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition duration-150 flex items-center"
+                        className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition duration-150 flex items-center whitespace-nowrap"
                     >
                         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
                         </svg>
                         + ADD PARCEL
                     </Link>
+                </div>
+
+                {/* Status Filter Buttons */}
+                <div className="flex gap-3 mb-6">
+                    <button
+                        onClick={() => setStatusFilter('all')}
+                        className={`px-6 py-2 rounded-lg font-medium transition duration-150 ${
+                            statusFilter === 'all'
+                                ? 'bg-blue-600 text-white shadow-lg'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                        All
+                    </button>
+                    <button
+                        onClick={() => setStatusFilter('collected')}
+                        className={`px-6 py-2 rounded-lg font-medium transition duration-150 ${
+                            statusFilter === 'collected'
+                                ? 'bg-green-600 text-white shadow-lg'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                        Collected
+                    </button>
+                    <button
+                        onClick={() => setStatusFilter('ready')}
+                        className={`px-6 py-2 rounded-lg font-medium transition duration-150 ${
+                            statusFilter === 'ready'
+                                ? 'bg-orange-600 text-white shadow-lg'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        }`}
+                    >
+                        Ready
+                    </button>
                 </div>
 
                 {/* Parcel Cards Grid */}

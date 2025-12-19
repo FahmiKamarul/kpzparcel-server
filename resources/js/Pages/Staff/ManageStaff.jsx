@@ -41,7 +41,6 @@ export default function ManageStaff({ auth, staffList }) {
     <AuthenticatedLayout
         user={auth.user}
         // Change header background to match the clean aesthetic
-        header={<h2 className="text-xl font-semibold leading-tight text-white">Manage Staff</h2>}
     >
         <Head title="Manage Staff" />
 
