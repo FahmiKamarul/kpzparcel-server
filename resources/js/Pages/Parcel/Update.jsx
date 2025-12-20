@@ -47,7 +47,7 @@ export default function Update({ auth, parcel, courierOptions }) {
 
                                 {/* TrackingNum - Read-only */}
                                 <div>
-                                    <label htmlFor="TrackingNum" className="block text-sm font-medium text-gray-700">Tracking Number <span className="text-red-500">*</span></label>
+                                    <label htmlFor="TrackingNum" className="block text-sm font-medium text-gray-700">Tracking Number</label>
                                     <input
                                         id="TrackingNum"
                                         type="text"
@@ -59,7 +59,7 @@ export default function Update({ auth, parcel, courierOptions }) {
 
                                 {/* CourierID - Dynamically generated */}
                                 <div>
-                                    <label htmlFor="CourierID" className="block text-sm font-medium text-gray-700">Courier Service <span className="text-red-500">*</span></label>
+                                    <label htmlFor="CourierID" className="block text-sm font-medium text-gray-700">Courier Service</label>
                                     <select
                                         id="CourierID"
                                         value={data.CourierID}
@@ -78,7 +78,7 @@ export default function Update({ auth, parcel, courierOptions }) {
 
                                 {/* CustomerName */}
                                 <div>
-                                    <label htmlFor="CustomerName" className="block text-sm font-medium text-gray-700">Customer Name <span className="text-red-500">*</span></label>
+                                    <label htmlFor="CustomerName" className="block text-sm font-medium text-gray-700">Customer Name</label>
                                     <input
                                         id="CustomerName"
                                         type="text"
