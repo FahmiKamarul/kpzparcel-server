@@ -55,14 +55,13 @@ export default function ManageParcel({ auth, parcels }) {
 
     // 7. Handle Payment Action
     const handleBulkPay = () => {
-        if (selectedIds.length === 0) return;
-        
-        // Example: Send selected IDs to your backend route
-        console.log("Paying for:", selectedIds);
-        
-        // router.post(route('parcel.bulkPay'), { ids: selectedIds });
-        alert(`Processing payment for ${selectedIds.length} parcels. Total: RM ${totalAmount.toFixed(2)}`);
-    };
+    if (selectedIds.length === 0) return;
+
+    // Use Inertia to visit the GET route with data
+    router.get(route('payment.bulk'), { 
+        ids: selectedIds 
+    });
+};
 
     return (
         <AuthenticatedLayout user={auth.user}>

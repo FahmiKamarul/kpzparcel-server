@@ -15,13 +15,9 @@ class Payment extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'PaymentID', 'TrackingNum', 'Price', 
+        'PaymentID', 'Price', 
         'PaymentMethod', 'PaymentDate', 'PaymentPenalty'
     ];
 
     // Relationship: Payment belongs to a Parcel
-    public function parcel()
-    {
-        return $this->belongsTo(Parcel::class, 'TrackingNum', 'TrackingNum');
-    }
 }

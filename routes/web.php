@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ParcelsController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Models\Parcel;
@@ -41,6 +42,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/parcel/pay/{trackingNum}', [PaymentController::class, 'pay'])->name('pay.single');
+    Route::get('/payment/bulk', [PaymentController::class, 'bulkShow'])->name('payment.bulk');
+    Route::get('/payment/{trackingNum}', [PaymentController::class, 'show'])->name('payment.show');
+    Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('payment.process');
 });
 
 require __DIR__.'/auth.php';

@@ -52,7 +52,7 @@ export function ParcelCard({ parcel, isSelected, onToggle }) {
                 {/* Right Side: Price & Actions (Unchanged) */}
                 <div className="flex flex-col items-end space-y-2">
                     <Link className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full hover:bg-blue-700 transition duration-150 shadow-md"
-                        href={route('pay.single', parcel.TrackingNum)}
+                        href={route('payment.show', parcel.TrackingNum)}
                     >
                         PAY
                     </Link>
