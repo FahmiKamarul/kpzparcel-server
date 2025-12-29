@@ -33,23 +33,17 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
-                                    className={
-                                        "text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white " +
-                                        (route().current('dashboard') ? "!text-white !border-white" : "")
-                                    }
+                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
                                 >
                                     Home
                                 </NavLink>
                             )}
                             {user && user.Role === 'Manager' && (
                                 <NavLink
-                                    
                                     href={route('staff.manage')}
                                     active={route().current('staff.manage')}
-                                    className={
-                                        "text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white " +
-                                        (route().current('staff.manage') ? "!text-white !border-white" : "")
-                                    }                            >
+                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
+                                >
                                     Staff
                                 </NavLink>
                             )}
@@ -57,8 +51,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink
                                     href={route('parcels.manage')}
                                     active={route().current('parcels.manage')}
-                                    className={"text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"+
-                                        (route().current('staff.manage') ? "!text-white !border-white" : "")}
+                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
                                 >
                                     Parcel
                                 </NavLink>
