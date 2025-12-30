@@ -7,7 +7,30 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Payment;
 use App\Models\ParcelPayment;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 class PaymentController extends Controller{
+    public function generatePdf($id)
+    {
+        // 1. Fetch Payment Data
+        $payment = Payment::where('PaymentID', $id)->firstOrFail();
+
+        // 2. Fetch Parcel Items (Same logic as before)
+        $paymentItems = DB::table('parcel_payments')
+                            ->join('parcel', 'parcel_payments.TrackingNum', '=', 'parcel.TrackingNum')
+                            ->where('parcel_payments.PaymentID', $id)
+                            ->select('parcel.TrackingNum', 'parcel.CourierID', 'parcel.Weight', 'parcel.Price')
+                            ->get();
+
+        // 3. Load the view and pass data
+        $pdf = Pdf::loadView('pdf.receipt', [
+            'payment' => $payment,
+            'items' => $paymentItems
+        ]);
+
+        // 4. Download the PDF (or use ->stream() to open in browser)
+        return $pdf->stream('Receipt-'.$payment->PaymentID.'.pdf');
+    }
     public function index()
     {
         $paymentList = Payment::latest()->get();

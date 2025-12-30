@@ -191,22 +191,19 @@ export default function ManagePayment({ auth, paymentList = [] }) {
 
                                         {/* Right Side: Action Buttons */}
                                         <div className="flex items-center space-x-3 ml-4 flex-shrink-0">
-                                            <Link
-                                                href={route('payment.show', item.PaymentID)} 
-                                                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors shadow-md hover:shadow-lg"
+                                            <a 
+                                                href={route('payment.pdf', item.PaymentID)}
+                                                target="_blank" // Opens in new tab
+                                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 transition-all"
                                             >
-                                                Receipt
-                                            </Link>
-
-                                            <button 
-                                                onClick={() => handleDelete(item)}
-                                                className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
-                                                title="Delete Record"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                {/* Download Icon */}
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                                 </svg>
-                                            </button>
+                                                Download PDF
+                                            </a>
+
+                                            
                                         </div>
                                     </div>
                                 );
