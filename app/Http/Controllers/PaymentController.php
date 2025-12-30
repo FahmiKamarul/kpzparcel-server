@@ -8,53 +8,22 @@ use Inertia\Inertia;
 use App\Models\Payment;
 use App\Models\ParcelPayment;
 class PaymentController extends Controller{
-    public function pay($trackingNum)
-    {
-        $parcel = Parcel::find($trackingNum);
-
-        if (!$parcel) {
-            return back()->withErrors([
-                'TrackingNum' => 'Tracking number not found.',
-            ]);
-        }
-        if ($parcel->status != 'Ready') {
-            return back()->withErrors([
-                'Payment' => 'Payment has already been made for this parcel.',
-            ]);
-        }
-
-        // Here you would typically integrate with a payment gateway.
-        // For demonstration, we'll just create a Payment record.
-
-        $payment = new Payment();
-        $payment->PaymentID = uniqid('pay_'); // Generate a unique PaymentID
-
-        // Link the payment to the parcel in parcel_payments table
-        $parcel->payments()->attach($payment->PaymentID);
-
-        return Inertia::render('Payment/Pay', [
-            'parcel' => $parcel,
-            'payment' => $payment,
-        ]);
-    }
     public function show($trackingNum)
     {
         $parcel = Parcel::where('TrackingNum', $trackingNum)->firstOrFail();
 
         return Inertia::render('Payment/Show', [
-            'parcels' => [$parcel] // Wrap in array
+            'parcels' => [$parcel] 
         ]);
     }
 
-    // NEW: For bulk items
+
     public function bulkShow(Request $request)
     {
-        // Get the list of IDs from the URL ?ids[]=123&ids[]=456
+
         $ids = $request->input('ids', []);
 
-        // Find all parcels matching those IDs (or TrackingNums)
-        // Assuming your ID column is 'id'. If it's 'TrackingNum', change whereIn('TrackingNum', $ids)
-        $parcels = Parcel::whereIn('TrackingNum', $ids)->get(); // OR whereIn('TrackingNum', $ids)
+        $parcels = Parcel::whereIn('TrackingNum', $ids)->get(); 
 
         if ($parcels->isEmpty()) {
             return redirect()->back()->with('error', 'No parcels selected');
@@ -63,5 +32,63 @@ class PaymentController extends Controller{
         return Inertia::render('Payment/Show', [
             'parcels' => $parcels
         ]);
+    }
+    public function processPayment(Request $request)
+    {
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:parcel,TrackingNum',
+            'method' => 'required|string',
+            'total_amount' => 'required|numeric|min:0',
+            'penalty_amount' => 'nullable|numeric|min:0',
+        ]);
+
+        $ids = $request->input('ids');
+        $method = $request->input('method') === 'ewallet' ? 1 : 0;
+        $totalAmount = $request->input('total_amount', 0);
+        $penaltyAmount = $request->input('penalty_amount', 0);
+        
+        $latestPayment = \App\Models\Payment::latest('PaymentID')->first();
+
+        if (!$latestPayment) {
+
+            $newPaymentId = 'PAY-10000';
+        } else {
+        
+            $lastIdNumber = (int) substr($latestPayment->PaymentID, 4);
+
+            $newNumber = $lastIdNumber + 1;
+
+            $newPaymentId = 'PAY-' . $newNumber;
+        }
+
+
+        $payment = new Payment();
+        $payment->PaymentID = $newPaymentId;
+        $payment->Price = $totalAmount;
+        $payment->PaymentMethod = $method;
+        $payment->PaymentDate = now();
+        $payment->PaymentPenalty = $penaltyAmount;
+        $payment->save();
+
+        $parcelPayments = [];
+        foreach ($ids as $trackingNum) {
+            $parcelPayments[] = [   
+                'PaymentID' => $payment->PaymentID,
+                'TrackingNum' => $trackingNum,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];  
+        }
+
+        ParcelPayment::insert($parcelPayments);
+
+        Parcel::whereIn('TrackingNum', $ids)->update([
+            'Status' => 'Collected',  
+            'updated_at' => now(),
+        ]);
+
+        return to_route('dashboard')->with('message', 'Payment successful! Parcels marked as Collected.');
     }
 }
