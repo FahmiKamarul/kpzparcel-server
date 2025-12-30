@@ -2,7 +2,7 @@
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react'; // Added router for the Pay action
-import React, { useState, useMemo } from 'react'; 
+import React, { useState, useMemo ,useEffect} from 'react'; 
 import { ParcelCard } from '@/Components/ParcelCard'; 
 
 export default function ManageParcel({ auth, parcels }) {
@@ -13,7 +13,20 @@ export default function ManageParcel({ auth, parcels }) {
 
     // 2. Selection State (Stores an array of selected Parcel IDs)
     const [selectedIds, setSelectedIds] = useState([]);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            // Check if user is currently selecting items to avoid disrupting them?
+            // If you want it to ALWAYS reload, just use this:
+            router.reload({
+                only: ['parcels'],    // Only re-fetch the 'parcels' prop from the server
+                preserveScroll: true, // Do not scroll back to top
+                preserveState: true,  // Keep the current search term and React state
+            });
+        }, 5000); // 5000 milliseconds = 5 seconds
 
+        // Cleanup function to stop the timer when the user leaves the page
+        return () => clearInterval(interval);
+    }, []);
     // 3. Filter Logic
     const filteredParcels = useMemo(() => {
         return parcels.filter(parcel => {
