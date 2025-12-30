@@ -56,6 +56,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                     Parcel
                                 </NavLink>
                             )}
+                            {user && (
+                                <NavLink
+                                    href={route('payment.manage')}
+                                    active={route().current('payment.manage')}
+                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
+                                >
+                                    Payment
+                                </NavLink>
+                            )}
                         </div>
 
                         {/* Right User Profile */}

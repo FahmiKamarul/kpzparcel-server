@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/payment/bulk', [PaymentController::class, 'bulkShow'])->name('payment.bulk');
     Route::get('/payment/{trackingNum}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('payment.process');
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payment.manage');
 });
 
 require __DIR__.'/auth.php';

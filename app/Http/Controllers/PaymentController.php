@@ -8,6 +8,13 @@ use Inertia\Inertia;
 use App\Models\Payment;
 use App\Models\ParcelPayment;
 class PaymentController extends Controller{
+    public function index()
+    {
+        $paymentList = Payment::latest()->get();
+        return Inertia::render('Payment/ManagePayment', [
+            'paymentList' => $paymentList,
+        ]);
+    }
     public function show($trackingNum)
     {
         $parcel = Parcel::where('TrackingNum', $trackingNum)->firstOrFail();

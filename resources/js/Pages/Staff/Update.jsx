@@ -128,26 +128,6 @@ export default function Update({ auth, staff }) {
                                 {errors.Role && <div className="text-red-500 text-sm mt-1">{errors.Role}</div>}
                             </div>
 
-                            {/* Role Dropdown */}
-                            <div>
-                                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Assigned Role</label>
-                                <div className="relative">
-                                    <select
-                                        id="role"
-                                        value={data.Role}
-                                        onChange={(e) => setData('Role', e.target.value)}
-                                        // Standardized input style for select
-                                        className="block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50 focus:border-blue-500 focus:ring-blue-500 appearance-none pr-10 transition duration-150"
-                                    >
-                                        <option value="Staff">Staff</option>
-                                        <option value="Manager">Manager</option>
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
-                                        <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
-                                    </div>
-                                </div>
-                                {errors.Role && <div className="text-red-500 text-sm mt-1">{errors.Role}</div>}
-                            </div>
 
                             {/* Profile Image Upload */}
                             <div>
