@@ -119,6 +119,6 @@ class PaymentController extends Controller{
             'updated_at' => now(),
         ]);
 
-        return to_route('dashboard')->with('message', 'Payment successful! Parcels marked as Collected.');
+        return to_route('parcels.manage')->with('message', 'Payment successful! Parcels marked as Collected.');
     }
 }

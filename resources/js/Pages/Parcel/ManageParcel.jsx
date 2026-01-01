@@ -5,12 +5,20 @@ import { Head, Link, router } from '@inertiajs/react'; // Added router for the P
 import React, { useState, useMemo ,useEffect} from 'react'; 
 import { ParcelCard } from '@/Components/ParcelCard'; 
 
-export default function ManageParcel({ auth, parcels }) {
+export default function ManageParcel({ auth, parcels, flash }) {
     
     // 1. Search & Filter State
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [showFlash, setShowFlash] = useState(false);
 
+    useEffect(() => {
+        if (flash.message) {
+            setShowFlash(true);
+            const timer = setTimeout(() => setShowFlash(false), 3000); // Hide after 3 seconds
+            return () => clearTimeout(timer);
+        }
+    }, [flash]);
     // 2. Selection State (Stores an array of selected Parcel IDs)
     const [selectedIds, setSelectedIds] = useState([]);
     useEffect(() => {
@@ -82,7 +90,21 @@ export default function ManageParcel({ auth, parcels }) {
 
             {/* Added pb-32 to create space for the floating bar so it doesn't cover content */}
             <div className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-100 min-h-screen pb-32">
-                
+                {flash.message && (
+                    <div className="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm flex justify-between items-center animate-fade-in-down">
+                        <div>
+                            <p className="font-bold">Success</p>
+                            <p>{flash.message}</p>
+                        </div>
+                        {/* Optional: Close button */}
+                        <button 
+                            onClick={(e) => e.target.closest('div').style.display = 'none'}
+                            className="text-green-700 hover:text-green-900 font-bold"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                )}
                 {/* Search Bar and Add Parcel Button */}
                 <div className="flex justify-start items-center mb-6 gap-4">
                     <div className="relative w-96">
