@@ -16,14 +16,24 @@
         /* Details */
         .details { width: 100%; margin-bottom: 30px; }
         .details td { vertical-align: top; }
+        
+        /* Helper Classes */
         .text-right { text-align: right; }
+        .text-center { text-align: center; } /* Added for Weight alignment */
+        
         .label { font-size: 10px; text-transform: uppercase; color: #718096; font-weight: bold; letter-spacing: 1px; }
         .value { font-size: 14px; font-weight: bold; color: #1a202c; }
 
         /* Table */
         .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .items-table th { background: #f7fafc; text-align: left; padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; text-transform: uppercase; color: #4a5568; }
+        .items-table th { background: #f7fafc; padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; text-transform: uppercase; color: #4a5568; }
         .items-table td { padding: 12px 10px; border-bottom: 1px solid #edf2f7; }
+        
+        /* Specific Column Alignment Helpers for Header */
+        .items-table th.text-left { text-align: left; }
+        .items-table th.text-center { text-align: center; }
+        .items-table th.text-right { text-align: right; }
+
         .items-table .item-title { font-weight: bold; color: #2d3748; }
         .items-table .item-sub { font-size: 12px; color: #718096; font-family: monospace; }
 
@@ -48,7 +58,7 @@
             <tr>
                 <td>
                     <div class="label">Payment Date</div>
-                    <div class="value">{{ $payment->created_at->format('d M Y, h:i A') }}</div>
+                    <div class="value">{{ $payment->created_at->setTimezone('Asia/Kuala_Lumpur')->format('d M Y, h:i A') }}</div>
                 </td>
                 <td class="text-right">
                     <div class="label">Payment Method</div>
@@ -62,8 +72,8 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th>Description</th>
-                    <th class="text-right">Weight</th>
+                    <th class="text-left">Description</th>
+                    <th class="text-center">Weight</th>
                     <th class="text-right">Price (RM)</th>
                 </tr>
             </thead>
@@ -74,7 +84,7 @@
                         <div class="item-title">{{ $item->CourierID }} Parcel</div>
                         <div class="item-sub">{{ $item->TrackingNum }}</div>
                     </td>
-                    <td class="text-right">{{ $item->Weight }} kg</td>
+                    <td class="text-center">{{ $item->Weight }} kg</td>
                     <td class="text-right">{{ number_format($item->Price, 2) }}</td>
                 </tr>
                 @empty

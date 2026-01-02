@@ -141,10 +141,9 @@ export default function ManagePayment({ auth, paymentList = [] }) {
                                                 
                                                 {item.PaymentMethod == 1 ? (
                                                     // E-Wallet Icon (Phone/QR)
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4h8v-4m0 0a3 3 0 01-3 3 3 3 0 01-3-3m-6 0a3 3 0 00-3 3 3 3 0 00-3-3m0 0h2v4h8v-4m0 0h2m-2-5h2m-2-4h2m-7 4h3v1h-3v-1zm-3-2h3v1h-3v-1zm-3 2h3v1h-3v-1zm-3-2h3v1h-3v-1z" />
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                                    </svg>
+                                                    <div className="h-12 w-12 bg-pink-600 rounded-md flex items-center justify-center text-white font-bold text-xs mb-2 leading-tight text-center p-1">
+                                                        DuitNow <br/> QR
+                                                    </div>
                                                 ) : (
                                                     // Cash Icon
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -184,8 +183,6 @@ export default function ManagePayment({ auth, paymentList = [] }) {
                                                 </p>
 
                                                 <p className="text-xs text-gray-400 mt-1">
-                                                    Date: {item.PaymentDate ? new Date(item.PaymentDate).toLocaleDateString() : 'N/A'} 
-                                                    <span className="mx-1">•</span> 
                                                     Created: {new Date(item.created_at).toLocaleDateString()}
                                                 </p>
                                             </div>
