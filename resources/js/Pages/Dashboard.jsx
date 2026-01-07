@@ -16,7 +16,7 @@ import { Line, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler);
 
-export default function Dashboard({ auth, stats, chartData, filters, disposalList }) { // Added disposalList prop
+export default function Dashboard({ auth, stats, chartData, filters, disposalList }) {
     
     const handleDateChange = (field, value) => {
         const newFilters = {
@@ -35,9 +35,10 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
         window.print();
     };
 
-    // --- Charts (Unchanged) ---
+    // --- Chart Options ---
     const lineChartOptions = {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { position: 'top' },
             title: { display: true, text: 'Sales Performance' },
@@ -45,6 +46,18 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
         scales: { y: { beginAtZero: true } }
     };
 
+    // UPDATED: Hide default legend, add cutout for text in middle
+    const doughnutOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '75%', 
+        plugins: {
+            legend: { display: false }, // We are building a custom legend
+            title: { display: false }
+        }
+    };
+
+    // --- Chart Data ---
     const areaChartData = {
         labels: chartData.labels,
         datasets: [{
@@ -62,16 +75,9 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
         datasets: [{
             data: [stats.collected, stats.uncollected], 
             backgroundColor: ['#4BC0C0', '#FF6384'],
-            hoverOffset: 4
+            hoverOffset: 4,
+            borderWidth: 0
         }]
-    };
-
-    const doughnutOptions = {
-        responsive: true,
-        plugins: {
-            legend: { position: 'bottom' },
-            title: { display: true, text: 'Parcel Status Distribution' }
-        }
     };
 
     return (
@@ -133,7 +139,7 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
                             <p className="text-3xl font-black text-gray-900">{stats.totalParcels}</p>
                         </div>
                         <div className="bg-red-200 p-5 rounded-xl shadow-sm border border-red-300 print:border-gray-300 print:bg-red-100">
-                            <h3 className="text-xs font-bold text-red-800 uppercase mb-1">Late Parcels</h3>
+                            <h3 className="text-xs font-bold text-red-800 uppercase mb-1">Late Parcels Collected</h3>
                             <p className="text-3xl font-black text-gray-900">{stats.late}</p>
                         </div>
                         <div className="bg-cyan-300 p-5 rounded-xl shadow-sm border border-cyan-400 print:border-gray-300 print:bg-cyan-100">
@@ -152,17 +158,50 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
                                 <span className="text-xs text-gray-400 font-medium">Daily Data Representation</span>
                             </div>
                             <div className="h-[400px] print:h-[300px]"> 
-                                <Line options={{...lineChartOptions, maintainAspectRatio: false}} data={areaChartData} />
+                                <Line options={lineChartOptions} data={areaChartData} />
                             </div>
                         </div>
 
                         {/* RIGHT COLUMN */}
                         <div className="flex flex-col gap-6 print:grid print:grid-cols-2 print:gap-4">
                             
-                            {/* Combined Donut */}
-                            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 flex flex-col items-center justify-center print:shadow-none print:border-gray-300">
-                                <div className="w-full max-w-[200px]">
-                                    <Doughnut data={distributionData} options={doughnutOptions} />
+                            {/* Combined Donut & Custom Legend */}
+                            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 flex flex-col print:shadow-none print:border-gray-300">
+                                <h3 className="font-bold text-gray-700 mb-6 text-center lg:text-left">Parcel Status Distribution</h3>
+                                
+                                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                                    
+                                    {/* The Chart */}
+                                    <div className="h-[160px] w-[160px] relative">
+                                        <Doughnut data={distributionData} options={doughnutOptions} />
+                                        {/* Center text inside donut */}
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
+                                            <span className="text-[10px] text-gray-400 font-medium uppercase">Total</span>
+                                            <span className="text-xl font-bold text-gray-700 leading-none">{stats.collected + stats.uncollected}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Custom Legend with Numbers */}
+                                    <div className="flex flex-col gap-4 w-full sm:w-auto">
+                                        {/* Collected Item */}
+                                        <div className="flex items-center justify-between sm:justify-start gap-3 border-b sm:border-0 border-gray-50 pb-2 sm:pb-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#4BC0C0' }}></span>
+                                                <p className="text-xs text-gray-500 uppercase font-semibold">Collected</p>
+                                            </div>
+                                            <p className="text-lg font-bold text-gray-800">{stats.collected}</p>
+                                        </div>
+
+                                        {/* Uncollected Item */}
+                                        <div className="flex items-center justify-between sm:justify-start gap-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FF6384' }}></span>
+                                                <p className="text-xs text-gray-500 uppercase font-semibold">Uncollected</p>
+                                            </div>
+                                            <p className="text-lg font-bold text-gray-800">{stats.uncollected}</p>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
 
@@ -171,44 +210,13 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
                                 
                                 {/* Status Check Box */}
                                 <div className={`p-5 rounded-xl border-l-4 ${stats.uncollected > 10 ? 'bg-red-100 border-red-500' : 'bg-yellow-100 border-yellow-500'} print:border print:border-gray-300`}>
-                                     <h3 className="font-bold text-sm text-gray-800">Status Check</h3>
+                                     <h3 className="font-bold text-sm text-gray-800">Total parcel disposed</h3>
                                      <p className="text-xs mt-1 text-gray-700">
-                                         Currently {stats.uncollected} parcels waiting.
+                                          Currently {disposalList.length} parcels has been disposed.
                                      </p>
                                 </div>
 
-                                {/* NEW: Disposal List */}
-                                <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100 print:shadow-none print:border-gray-300">
-                                     <h3 className="font-bold text-xs text-red-600 uppercase mb-3 flex items-center justify-between">
-                                        <span>⚠️ Disposal List ({'>'}14 Days)</span>
-                                        <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-[10px]">{disposalList.length}</span>
-                                     </h3>
-                                     
-                                     {disposalList.length > 0 ? (
-                                         <div className="overflow-hidden overflow-x-auto rounded-lg border border-gray-100">
-                                             <table className="w-full text-xs text-left disposal-table">
-                                                <thead className="bg-gray-50 text-gray-500 font-semibold border-b">
-                                                    <tr>
-                                                        <th className="px-3 py-2">Tracking</th>
-                                                        <th className="px-3 py-2">Shelf</th>
-                                                        <th className="px-3 py-2 text-right">Date</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-gray-100">
-                                                    {disposalList.map((parcel) => (
-                                                        <tr key={parcel.TrackingNum} className="hover:bg-gray-50">
-                                                            <td className="px-3 py-2 font-medium text-gray-900">{parcel.TrackingNum}</td>
-                                                            <td className="px-3 py-2 text-gray-600">{parcel.ShelfNum}</td>
-                                                            <td className="px-3 py-2 text-right text-red-500">{parcel.DateArrive}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                             </table>
-                                         </div>
-                                     ) : (
-                                         <p className="text-xs text-gray-400 italic text-center py-2">No parcels require disposal.</p>
-                                     )}
-                                </div>
+                                
                             </div>
 
                         </div>
