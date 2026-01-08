@@ -33,8 +33,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
-                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
-                                >
+                                    className={`flex items-center px-3 h-250 text-sm font-bold uppercase transition-all duration-150 ${
+                                        route().current('dashboard')
+                                        ? 'bg-white text-blue-600 rounded' // Sharp white box for active
+                                        : 'text-white hover:bg-blue-600'        // White text for inactive
+                                        }`}                                >
                                     Home
                                 </NavLink>
                             )}
@@ -42,7 +45,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink
                                     href={route('staff.manage')}
                                     active={route().current('staff.manage')}
-                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
+                                    className={`flex items-center px-3 h-250 text-sm font-bold uppercase transition-all duration-150 ${
+                                        route().current('staff.manage')
+                                        ? 'bg-white text-blue-600 rounded' // Sharp white box for active
+                                        : 'text-white hover:bg-blue-600'        // White text for inactive
+                                        }`} 
                                 >
                                     Staff
                                 </NavLink>
@@ -51,7 +58,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink
                                     href={route('parcels.manage')}
                                     active={route().current('parcels.manage')}
-                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
+                                    className={`flex items-center px-3 h-250 text-sm font-bold uppercase transition-all duration-150 ${
+                                        route().current('parcels.manage')
+                                        ? 'bg-white text-blue-600 rounded' // Sharp white box for active
+                                        : 'text-white hover:bg-blue-600'        // White text for inactive
+                                        }`}
                                 >
                                     Parcel
                                 </NavLink>
@@ -60,7 +71,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink
                                     href={route('payment.manage')}
                                     active={route().current('payment.manage')}
-                                    className="text-white text-lg font-semibold hover:text-gray-200 border-b-2 border-transparent hover:border-white focus:border-white"
+                                    className={`flex items-center px-3 h-250 text-sm font-bold uppercase transition-all duration-150 ${
+                                        route().current('payment.manage')
+                                        ? 'bg-white text-blue-600 rounded' // Sharp white box for active
+                                        : 'text-white hover:bg-blue-600'        // White text for inactive
+                                        }`}
                                 >
                                     Payment
                                 </NavLink>
