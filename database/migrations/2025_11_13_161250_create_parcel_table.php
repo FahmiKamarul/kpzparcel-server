@@ -28,7 +28,7 @@ return new class extends Migration
             $table->double('Weight');
             $table->date('DateArrive');
             $table->double('Price');
-            $table->enum('Status', ['Ready', 'Collected','To Be Disposed'])->default('Ready');
+            $table->enum('Status', ['Ready', 'Collected','To Be Dispose'])->default('Ready');
             $table->timestamps();
         });
     }

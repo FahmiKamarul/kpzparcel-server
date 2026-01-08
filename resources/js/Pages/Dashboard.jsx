@@ -31,6 +31,19 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
         });
     };
 
+    const markAsDisposed = (trackingNum) => {
+        if (confirm('Are you sure you want to mark this parcel as "To Be Dispose"?')) {
+            router.put(route('parcel.updateStatus', trackingNum), { 
+                status: 'To Be Dispose' 
+            }, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Optional: Show a toast notification here
+                }
+            });
+        }
+    };
+
     const handlePrint = () => {
         window.print();
     };
@@ -46,13 +59,12 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
         scales: { y: { beginAtZero: true } }
     };
 
-    // UPDATED: Hide default legend, add cutout for text in middle
     const doughnutOptions = {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '75%', 
         plugins: {
-            legend: { display: false }, // We are building a custom legend
+            legend: { display: false },
             title: { display: false }
         }
     };
@@ -71,10 +83,10 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
     };
 
     const distributionData = {
-        labels: ['Collected', 'Uncollected'],
+        labels: ['Collected', 'Uncollected', 'To Be Dispose'],
         datasets: [{
-            data: [stats.collected, stats.uncollected], 
-            backgroundColor: ['#4BC0C0', '#FF6384'],
+            data: [stats.collected, stats.uncollected, stats.disposed], 
+            backgroundColor: ['#4BC0C0', '#FF6384', '#FFCE56'], 
             hoverOffset: 4,
             borderWidth: 0
         }]
@@ -86,14 +98,28 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
 
             <style>{`
                 @media print {
+                    /* Hide navigation and other non-essentials */
                     nav, aside, header, .no-print { display: none !important; }
+                    
+                    /* Reset background colors for printing */
                     body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background-color: white !important; }
-                    .shadow-sm, .shadow-md { box-shadow: none !important; border: 1px solid #ccc !important; }
+                    
+                    /* Remove shadows and borders for a cleaner look */
+                    .shadow-sm, .shadow-md { box-shadow: none !important; border: 1px solid #eee !important; }
+                    
+                    /* Ensure full width usage */
                     .max-w-7xl { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
-                    @page { margin: 1cm; }
-                    /* Make table text smaller on print to fit more rows */
-                    .disposal-table td, .disposal-table th { font-size: 10px !important; padding: 4px !important; }
+                    
+                    /* Force charts to break cleanly */
+                    .chart-container { break-inside: avoid; page-break-inside: avoid; }
+                    
+                    /* Page Margins */
+                    @page { margin: 0.5cm; size: auto; }
                 }
+                /* Custom Scrollbar for the list */
+                .custom-scroll::-webkit-scrollbar { width: 4px; }
+                .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+                .custom-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
             `}</style>
 
             <div className="py-6 bg-gray-50 min-h-screen print:bg-white print:py-0">
@@ -107,7 +133,7 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
                             <p className="hidden print:block text-xs text-gray-400 mt-1">Period: {filters.start_date} to {filters.end_date}</p>
                         </div>
 
-                        {/* CONTROLS */}
+                        {/* CONTROLS (Hidden on Print) */}
                         <div className="flex flex-wrap items-center gap-3 no-print">
                             <button onClick={handlePrint} className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm text-sm font-medium">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,42 +174,49 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
                         </div>
                     </div>
 
-                    {/* MAIN CONTENT GRID */}
+                    {/* MAIN CONTENT GRID 
+                        - 'print:block' removes the grid layout on print 
+                        - This forces charts to stack vertically instead of squishing side-by-side
+                    */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 print:block">
                         
-                        {/* LEFT: Main Chart */}
-                        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md border border-gray-100 print:shadow-none print:border-gray-300 print:mb-6">
+                        {/* LEFT: Main Chart (Sales) */}
+                        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-md border border-gray-100 chart-container print:shadow-none print:border print:border-gray-200 print:mb-6 print:w-full">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-bold text-gray-700">Parcel Inflow Trends</h3>
                                 <span className="text-xs text-gray-400 font-medium">Daily Data Representation</span>
                             </div>
+                            {/* Fixed height for print to ensure it fits */}
                             <div className="h-[400px] print:h-[300px]"> 
                                 <Line options={lineChartOptions} data={areaChartData} />
                             </div>
                         </div>
 
-                        {/* RIGHT COLUMN */}
-                        <div className="flex flex-col gap-6 print:grid print:grid-cols-2 print:gap-4">
+                        {/* RIGHT COLUMN WRAPPER */}
+                        <div className="flex flex-col gap-6 print:w-full print:block">
                             
                             {/* Combined Donut & Custom Legend */}
-                            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 flex flex-col print:shadow-none print:border-gray-300">
-                                <h3 className="font-bold text-gray-700 mb-6 text-center lg:text-left">Parcel Status Distribution</h3>
+                            <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100 flex flex-col chart-container print:shadow-none print:border print:border-gray-200 print:flex-row print:justify-around print:items-center">
                                 
-                                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                                <div className="print:w-full print:text-center mb-0 print:mb-4 hidden print:block">
+                                    <h3 className="font-bold text-gray-700">Parcel Status Distribution</h3>
+                                </div>
+                                <h3 className="font-bold text-gray-700 mb-6 text-center lg:text-left print:hidden">Parcel Status Distribution</h3>
+                                
+                                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 print:gap-12">
                                     
                                     {/* The Chart */}
                                     <div className="h-[160px] w-[160px] relative">
                                         <Doughnut data={distributionData} options={doughnutOptions} />
-                                        {/* Center text inside donut */}
                                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
                                             <span className="text-[10px] text-gray-400 font-medium uppercase">Total</span>
-                                            <span className="text-xl font-bold text-gray-700 leading-none">{stats.collected + stats.uncollected}</span>
+                                            <span className="text-xl font-bold text-gray-700 leading-none">{stats.collected + stats.uncollected + stats.disposed}</span>
                                         </div>
                                     </div>
 
-                                    {/* Custom Legend with Numbers */}
+                                    {/* Custom Legend */}
                                     <div className="flex flex-col gap-4 w-full sm:w-auto">
-                                        {/* Collected Item */}
+                                        {/* Collected */}
                                         <div className="flex items-center justify-between sm:justify-start gap-3 border-b sm:border-0 border-gray-50 pb-2 sm:pb-0">
                                             <div className="flex items-center gap-2">
                                                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#4BC0C0' }}></span>
@@ -192,32 +225,28 @@ export default function Dashboard({ auth, stats, chartData, filters, disposalLis
                                             <p className="text-lg font-bold text-gray-800">{stats.collected}</p>
                                         </div>
 
-                                        {/* Uncollected Item */}
-                                        <div className="flex items-center justify-between sm:justify-start gap-3">
+                                        {/* Uncollected */}
+                                        <div className="flex items-center justify-between sm:justify-start gap-3 border-b sm:border-0 border-gray-50 pb-2 sm:pb-0">
                                             <div className="flex items-center gap-2">
                                                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FF6384' }}></span>
                                                 <p className="text-xs text-gray-500 uppercase font-semibold">Uncollected</p>
                                             </div>
                                             <p className="text-lg font-bold text-gray-800">{stats.uncollected}</p>
                                         </div>
+
+                                        {/* Disposed */}
+                                        <div className="flex items-center justify-between sm:justify-start gap-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FFCE56' }}></span>
+                                                <p className="text-xs text-gray-500 uppercase font-semibold">To Dispose</p>
+                                            </div>
+                                            <p className="text-lg font-bold text-gray-800">{stats.disposed}</p>
+                                        </div>
                                     </div>
 
                                 </div>
                             </div>
 
-                            {/* Status & Disposal Container */}
-                            <div className="flex flex-col gap-4">
-                                
-                                {/* Status Check Box */}
-                                <div className={`p-5 rounded-xl border-l-4 ${stats.uncollected > 10 ? 'bg-red-100 border-red-500' : 'bg-yellow-100 border-yellow-500'} print:border print:border-gray-300`}>
-                                     <h3 className="font-bold text-sm text-gray-800">Total parcel disposed</h3>
-                                     <p className="text-xs mt-1 text-gray-700">
-                                          Currently {disposalList.length} parcels has been disposed.
-                                     </p>
-                                </div>
-
-                                
-                            </div>
 
                         </div>
                     </div>

@@ -5,12 +5,19 @@
     <title>Receipt #{{ $payment->PaymentID }}</title>
     <style>
         body { font-family: 'Helvetica', sans-serif; color: #333; font-size: 14px; line-height: 1.6; }
-        .container { width: 100%; max-width: 700px; margin: 0 auto; }
+        .container { width: 100%; max-width: 700px; margin: 0 auto; padding: 20px; }
         
-        /* Header */
-        .header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { margin: 0; color: #2d3748; text-transform: uppercase; font-size: 24px; }
-        .header p { margin: 5px 0 0; color: #718096; }
+        /* New Header Layout */
+        .header-table { width: 100%; border-bottom: 2px solid #eee; margin-bottom: 30px; padding-bottom: 20px; }
+        .header-table td { vertical-align: top; }
+        
+        .company-info { font-size: 12px; color: #555; line-height: 1.4; margin-top: 10px; }
+        .company-name { font-weight: bold; color: #2d3748; font-size: 14px; }
+
+        .receipt-info { text-align: right; }
+        .receipt-info h1 { margin: 0; color: #2d3748; text-transform: uppercase; font-size: 24px; }
+        .receipt-info p { margin: 5px 0 0; color: #718096; }
+
         .badge { background: #e6fffa; color: #2c7a7b; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; border: 1px solid #b2f5ea; display: inline-block; margin-top: 10px; }
 
         /* Details */
@@ -19,7 +26,7 @@
         
         /* Helper Classes */
         .text-right { text-align: right; }
-        .text-center { text-align: center; } /* Added for Weight alignment */
+        .text-center { text-align: center; }
         
         .label { font-size: 10px; text-transform: uppercase; color: #718096; font-weight: bold; letter-spacing: 1px; }
         .value { font-size: 14px; font-weight: bold; color: #1a202c; }
@@ -29,7 +36,6 @@
         .items-table th { background: #f7fafc; padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; text-transform: uppercase; color: #4a5568; }
         .items-table td { padding: 12px 10px; border-bottom: 1px solid #edf2f7; }
         
-        /* Specific Column Alignment Helpers for Header */
         .items-table th.text-left { text-align: left; }
         .items-table th.text-center { text-align: center; }
         .items-table th.text-right { text-align: right; }
@@ -48,11 +54,27 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Official Receipt</h1>
-            <p>Transaction ID: #{{ $payment->PaymentID }}</p>
-            <span class="badge">PAID</span>
-        </div>
+        
+        <table class="header-table">
+            <tr>
+                <td style="width: 60%;">
+                    <img src="{{ public_path('storage/images/KpzParcel_logo.png') }}" style="height: 100px; margin-bottom: 10px;" alt="Logo">
+                    
+                    <div class="company-info">
+                        <div class="company-name">One Stop Center</div>
+                        Kolej Pendeta Za'ba<br>
+                        Universiti Kebangsaan Malaysia<br>
+                        43600, Bangi
+                    </div>
+                </td>
+
+                <td class="receipt-info">
+                    <h1>Official Receipt</h1>
+                    <p>Transaction ID: #{{ $payment->PaymentID }}</p>
+                    <span class="badge">PAID</span>
+                </td>
+            </tr>
+        </table>
 
         <table class="details">
             <tr>
@@ -104,10 +126,12 @@
                 <td class="text-right" style="color: #718096;">Subtotal</td>
                 <td class="text-right" style="width: 120px;">{{ number_format($basePrice, 2) }}</td>
             </tr>
+            @if($payment->PaymentPenalty > 0)
             <tr>
                 <td class="text-right" style="color: #e53e3e;">Late Penalty Fee</td>
                 <td class="text-right" style="color: #e53e3e;">+ {{ number_format($payment->PaymentPenalty, 2) }}</td>
             </tr>
+            @endif
             <tr>
                 <td class="text-right total-row">Total Paid</td>
                 <td class="text-right total-row">RM {{ number_format($payment->Price, 2) }}</td>

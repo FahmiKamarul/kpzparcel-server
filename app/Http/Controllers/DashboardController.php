@@ -29,8 +29,16 @@ class DashboardController extends Controller
         
         // 3. Stats Calculations
         $totalParcels = (clone $baseQuery)->count();
+        
+        // Count specific statuses
         $collectedParcels = (clone $baseQuery)->where('Status', 'Collected')->count();
-        $uncollectedParcels = $totalParcels - $collectedParcels;
+        
+        // UPDATED: Using exact string 'To Be Dispose'
+        $disposedParcels  = (clone $baseQuery)->where('Status', 'To Be Dispose')->count();
+        
+        // 'Uncollected' = Active on shelf (Ready)
+        $uncollectedParcels = (clone $baseQuery)->where('Status', 'Ready')->count();
+
         $totalIncome = (clone $baseQuery)->sum('Price');
 
         $lateParcels = Payment::whereBetween('PaymentDate', [$startDate, $endDate])
@@ -39,13 +47,18 @@ class DashboardController extends Controller
 
         $totalStaff = User::count(); 
 
-        // 4. NEW: Disposal List (Status 'Ready' AND > 14 Days old)
-        // We don't filter this by the date range selected, because old parcels might be from last month
-        // We just want ANY parcel currently in the system that is old.
-        $disposalList = Parcel::where('Status', 'Ready')
-            ->where('DateArrive', '<=', Carbon::now()->subDays(14))
-            ->orderBy('DateArrive', 'asc') // Oldest first
-            ->get(['TrackingNum', 'CustomerName', 'ShelfNum', 'DateArrive']);
+        // 4. UPDATED: Disposal List 
+        // Logic: Show items ALREADY marked 'To Be Dispose' 
+        //        OR items that look like they SHOULD be disposed ('Ready' + >14 days old)
+        $disposalList = Parcel::where(function($query) {
+                $query->where('Status', 'To Be Dispose') // <--- Updated here
+                      ->orWhere(function($subQuery) {
+                          $subQuery->where('Status', 'Ready')
+                                   ->where('DateArrive', '<=', Carbon::now()->subDays(14));
+                      });
+            })
+            ->orderBy('DateArrive', 'asc')
+            ->get(['TrackingNum', 'CustomerName', 'ShelfNum', 'DateArrive', 'Status']);
 
         // 5. Chart Data
         $dailySales = (clone $baseQuery)
@@ -59,7 +72,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'filters' => [
-                'start_date' => $startDate->format('Y-m-d'),
+                'start_date' => $startDate->format('Y-m-d'), 
                 'end_date' => $endDate->format('Y-m-d'),
             ],
             'stats' => [
@@ -67,10 +80,11 @@ class DashboardController extends Controller
                 'totalParcels' => $totalParcels,
                 'collected' => $collectedParcels,
                 'uncollected' => $uncollectedParcels,
+                'disposed' => $disposedParcels, // Counts 'To Be Dispose'
                 'late' => $lateParcels,
                 'income' => number_format($totalIncome, 2),
             ],
-            'disposalList' => $disposalList, // <--- Passing the list to Frontend
+            'disposalList' => $disposalList, 
             'chartData' => [
                 'labels' => $labels,
                 'label' => 'Sales (' . $startDate->format('d M') . ' - ' . $endDate->format('d M') . ')',

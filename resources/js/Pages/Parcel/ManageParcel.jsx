@@ -4,19 +4,15 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import React, { useState, useMemo, useEffect } from 'react'; 
 import { ParcelCard } from '@/Components/ParcelCard'; 
-// 1. Import the scanning hook
 import { useZxing } from "react-zxing";
 
 // --- Helper Component: Barcode Scanner Modal ---
 const BarcodeScannerModal = ({ onClose, onScan }) => {
-    // Standard parcel barcodes are usually Code 128 or Code 39, but zxing handles most by default.
     const { ref } = useZxing({
         onDecodeResult(result) {
-            // Once a code is found, pass it up and close the scanner
             onScan(result.getText());
             onClose(); 
         },
-        // Optional: specific format constraints can be added here if needed
     });
 
     return (
@@ -27,10 +23,7 @@ const BarcodeScannerModal = ({ onClose, onScan }) => {
                     <button onClick={onClose} className="text-gray-300 hover:text-white">&times;</button>
                 </div>
                 <div className="relative bg-black h-64 sm:h-80 flex items-center justify-center overflow-hidden">
-                    {/* The video element acts as the camera view */}
                     <video ref={ref} className="absolute min-w-full min-h-full object-cover" />
-                    
-                    {/* Visual Guide Overlay (Red Line) */}
                     <div className="absolute inset-0 border-2 border-red-500/50 opacity-50 z-10 pointer-events-none rounded-lg m-8"></div>
                     <div className="absolute w-full h-0.5 bg-red-600 top-1/2 left-0 z-20 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></div>
                 </div>
@@ -48,8 +41,6 @@ export default function ManageParcel({ auth, parcels, flash }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [showFlash, setShowFlash] = useState(false);
-    
-    // 2. Add state for scanner visibility
     const [isScannerOpen, setIsScannerOpen] = useState(false);
 
     useEffect(() => {
@@ -62,7 +53,7 @@ export default function ManageParcel({ auth, parcels, flash }) {
 
     const [selectedIds, setSelectedIds] = useState([]);
     
-    // Auto-refresh logic (Kept as is)
+    // Auto-refresh logic
     useEffect(() => {
         const interval = setInterval(() => {
             router.reload({
@@ -74,11 +65,14 @@ export default function ManageParcel({ auth, parcels, flash }) {
         return () => clearInterval(interval);
     }, []);
 
-    // Filter Logic (Kept as is)
+    // Filter Logic
     const filteredParcels = useMemo(() => {
         return parcels.filter(parcel => {
             const matchesSearch = parcel.TrackingNum.toLowerCase().includes(searchTerm.toLowerCase());
+            
+            // Exact status matching (case-insensitive)
             const matchesStatus = statusFilter === 'all' || parcel.Status.toLowerCase() === statusFilter.toLowerCase();
+            
             return matchesSearch && matchesStatus;
         });
     }, [parcels, searchTerm, statusFilter]);
@@ -111,18 +105,18 @@ export default function ManageParcel({ auth, parcels, flash }) {
         router.get(route('payment.bulk'), { ids: selectedIds });
     };
 
-    // 3. Handler for successful scan
     const handleScanResult = (result) => {
         setSearchTerm(result);
-        // Optional: Play a beep sound
-        // new Audio('/beep.mp3').play().catch(e => console.log('Audio play failed', e));
     };
+
+    // UPDATED: Filter options array
+    // Added 'to be dispose' to the list
+    const filterOptions = ['all', 'ready', 'collected', 'to be dispose'];
 
     return (
         <AuthenticatedLayout user={auth.user}>
             <Head title="Parcel Management" />
 
-            {/* 4. Render Scanner Modal if open */}
             {isScannerOpen && (
                 <BarcodeScannerModal 
                     onClose={() => setIsScannerOpen(false)} 
@@ -131,7 +125,6 @@ export default function ManageParcel({ auth, parcels, flash }) {
             )}
 
             <div className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-100 min-h-screen pb-32">
-                {/* Flash Message ... */}
                 {flash.message && showFlash && (
                     <div className="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm flex justify-between items-center animate-fade-in-down">
                         <div>
@@ -155,13 +148,10 @@ export default function ManageParcel({ auth, parcels, flash }) {
                             placeholder="Tracking Number"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            // Added padding-right (pr-20) to make room for two icons
                             className="w-full pl-4 pr-20 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
                         />
                         
-                        {/* Container for Icons */}
                         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-                            {/* SCAN BUTTON */}
                             <button 
                                 onClick={() => setIsScannerOpen(true)}
                                 className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
@@ -171,8 +161,6 @@ export default function ManageParcel({ auth, parcels, flash }) {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                                 </svg>
                             </button>
-
-                            {/* Existing Search Icon */}
                             <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
@@ -190,15 +178,15 @@ export default function ManageParcel({ auth, parcels, flash }) {
                     </Link>
                 </div>
 
-                {/* Filters, Grid, and Floating Bar remain unchanged below... */}
                 <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-                    {/* ... (Existing Filter buttons code) ... */}
-                    <div className="flex gap-3">
-                        {['all', 'collected', 'ready'].map((status) => (
+                    
+                    {/* UPDATED: Filter Buttons */}
+                    <div className="flex gap-3 overflow-x-auto pb-2 md:pb-0">
+                        {filterOptions.map((status) => (
                             <button
                                 key={status}
                                 onClick={() => setStatusFilter(status)}
-                                className={`px-6 py-2 rounded-lg font-medium transition duration-150 capitalize ${
+                                className={`px-6 py-2 rounded-lg font-medium transition duration-150 capitalize whitespace-nowrap ${
                                     statusFilter === status
                                         ? 'bg-blue-600 text-white shadow-lg'
                                         : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
@@ -234,9 +222,12 @@ export default function ManageParcel({ auth, parcels, flash }) {
                             />
                         ))
                     ) : (
-                        <p className="col-span-full text-center text-gray-500 py-8">
-                            No parcels found. Try adjusting your search term.
-                        </p>
+                        <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">
+                            <svg className="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                            <p>No parcels found matching this filter.</p>
+                        </div>
                     )}
                 </div>
             </div>

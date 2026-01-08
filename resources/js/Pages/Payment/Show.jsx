@@ -4,55 +4,48 @@ import { Head, Link, router } from '@inertiajs/react';
 
 export default function PaymentPage({ auth, parcels = [] }) {
     const [paymentMethod, setPaymentMethod] = useState(null);
-    
-    // 1. Tambah state baru untuk Cash Calculator (Hanya UI, tak simpan DB)
     const [cashReceived, setCashReceived] = useState('');
 
-    // Calculate penalty: RM 1 for every day after 4 days from date arrived
-    const calculatePenalty = (dateArrive) => {
+    // Helper: Calculate how many days are overdue
+    const getOverdueDays = (dateArrive) => {
         const arrival = new Date(dateArrive);
         const today = new Date();
-        const daysElapsed = Math.floor((today - arrival) / (1000 * 60 * 60 * 24));
-        return Math.max(0, daysElapsed - 4);
+        const diffTime = Math.abs(today - arrival);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        // Logic: 1 day penalty for every day after 4 days
+        return Math.max(0, diffDays - 4);
     };
 
-    // Calculate Total Price dynamically
-    const totalAmount = useMemo(() => {
-        return parcels.reduce((sum, item) => {
+    // Calculate All Totals (Base, Penalty, Grand Total)
+    const totals = useMemo(() => {
+        return parcels.reduce((acc, item) => {
             const basePrice = parseFloat(item.Price || 0);
-            const penalty = calculatePenalty(item.DateArrive); 
-            return sum + basePrice + penalty;
-        }, 0);
+            const penalty = getOverdueDays(item.DateArrive) * 1; // Rate: RM1 per day
+            
+            acc.base += basePrice;
+            acc.penalty += penalty;
+            acc.grandTotal += basePrice + penalty;
+            
+            return acc;
+        }, { base: 0, penalty: 0, grandTotal: 0 });
     }, [parcels]);
 
-    // 2. Logic untuk kira Balance secara real-time
+    // Logic for Balance Calculator
     const balanceAmount = useMemo(() => {
         if (!cashReceived) return 0;
-        return parseFloat(cashReceived) - totalAmount;
-    }, [cashReceived, totalAmount]);
+        return parseFloat(cashReceived) - totals.grandTotal;
+    }, [cashReceived, totals.grandTotal]);
 
     const handlePay = () => {
         if (!paymentMethod) return;
         
-        // 1. Get IDs
         const parcelIds = parcels.map(p => p.id || p.TrackingNum);
-
-        // 2. Calculate the specific Total Penalty amount
-        const totalPenalty = parcels.reduce((sum, item) => {
-            return sum + calculatePenalty(item.DateArrive);
-        }, 0);
         
-        console.log(`Processing payment via ${paymentMethod}`);
-        console.log(`Total: RM${totalAmount}, Penalty Portion: RM${totalPenalty}`);
-        
-        // 3. Send data to backend
-        // Nota: Kita TIDAK hantar 'cashReceived' atau 'balanceAmount' ke backend 
-        // sebab tak perlu simpan dalam database.
         router.post(route('payment.process'), { 
             ids: parcelIds, 
             method: paymentMethod,
-            total_amount: totalAmount,  
-            penalty_amount: totalPenalty 
+            total_amount: totals.grandTotal,  
+            penalty_amount: totals.penalty 
         });
     };
 
@@ -66,7 +59,7 @@ export default function PaymentPage({ auth, parcels = [] }) {
                 </h1>
 
                 {/* --- Parcel Summary Area --- */}
-                <div className="w-full max-w-2xl border-2 border-blue-600 rounded-2xl p-6 mb-8 shadow-sm bg-white">
+                <div className="w-full max-w-3xl border-2 border-blue-600 rounded-2xl p-6 mb-8 shadow-sm bg-white">
                     <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
                         <h2 className="text-lg font-bold text-gray-700">Order Summary</h2>
                         <span className="text-sm bg-blue-100 text-blue-800 py-1 px-3 rounded-full font-bold">
@@ -74,27 +67,43 @@ export default function PaymentPage({ auth, parcels = [] }) {
                         </span>
                     </div>
 
-                    <div className="max-h-80 overflow-y-auto pr-2 space-y-4">
+                    <div className="max-h-96 overflow-y-auto pr-2 space-y-4">
                         {parcels.map((item, index) => {
-                            const penalty = calculatePenalty(item.DateArrive);
+                            const overdueDays = getOverdueDays(item.DateArrive);
+                            const penaltyCost = overdueDays * 1; 
+                            const basePrice = parseFloat(item.Price || 0);
+                            const subtotal = basePrice + penaltyCost;
+
                             return ( 
-                                <div key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                    <div className="text-gray-800 text-sm space-y-1">
-                                        <p><span className="font-semibold">Tracking:</span> {item.TrackingNum}</p>
-                                        <p><span className="font-semibold">Name:</span> {item.CustName || item.CustomerName}</p>
-                                        <p><span className="font-semibold">Date Arrived:</span> {item.DateArrive}</p>
-                                        <p className={`${penalty > 0 ? 'text-red-600 font-bold' : 'text-gray-800'}`}>
-                                            <span className="font-semibold text-gray-800">Penalty:</span> RM {penalty.toFixed(2)}
-                                        </p>
-                                        <p className="text-xs text-gray-500">Shelf: {item.ShelfNum} | {item.Weight}kg</p>
+                                <div key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 bg-white rounded-xl border-2 border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                                    
+                                    {/* LEFT: Parcel Details */}
+                                    <div className="text-gray-800 text-sm space-y-1 w-full md:w-1/2 border-b md:border-b-0 md:border-r border-gray-200 pb-4 md:pb-0 md:pr-4 mb-4 md:mb-0">
+                                        <p><span className="font-bold text-black">Tracking Number :</span> {item.TrackingNum}</p>
+                                        <p><span className="font-bold text-black">Name :</span> {item.CustName || item.CustomerName}</p>
+                                        <p><span className="font-bold text-black">Date Arrived :</span> {item.DateArrive}</p>
+                                        <div className="flex justify-between items-center pr-4">
+                                            <p className="text-gray-600">Shelf: {item.ShelfNum} | {item.Weight}kg</p>
+                                        </div>
+                                        {overdueDays > 0 && (
+                                            <p className="font-bold text-red-500 mt-1">Penalty : {overdueDays} Days</p>
+                                        )}
                                     </div>
-                                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-2 md:mt-0 gap-4">
-                                        <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                            {item.CourierID === 1 ? 'J&T' : 'COURIER'}
-                                        </span>
-                                        <p className="text-lg font-bold text-blue-600">
-                                            RM {Number(item.Price).toFixed(2)}
-                                        </p>
+
+                                    {/* RIGHT: Price Breakdown Grid */}
+                                    <div className="flex flex-row items-center justify-between w-full md:w-1/2 md:pl-8 gap-2">
+                                        <div className="text-center flex-1">
+                                            <p className="text-sm font-bold text-black underline mb-1">Price</p>
+                                            <p className="text-xl font-bold text-black">RM {Number(basePrice).toFixed(0)}</p>
+                                        </div>
+                                        <div className="text-center flex-1">
+                                            <p className="text-sm font-bold text-red-500 underline mb-1">Penalty</p>
+                                            <p className="text-xl font-bold text-red-500">RM {penaltyCost}</p>
+                                        </div>
+                                        <div className="text-center flex-1">
+                                            <p className="text-sm font-bold text-blue-800 underline mb-1">Subtotal</p>
+                                            <p className="text-xl font-bold text-blue-800">RM {subtotal}</p>
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -102,10 +111,36 @@ export default function PaymentPage({ auth, parcels = [] }) {
                     </div>
                 </div>
 
-                {/* --- Total Amount Header --- */}
-                <h2 className="text-3xl font-bold text-blue-600 mb-6">
-                    Total: RM {totalAmount.toFixed(2)}
-                </h2>
+                {/* --- TOTALS BREAKDOWN SECTION --- */}
+                <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 mb-8 w-full max-w-2xl px-4">
+                    
+                    {/* Total Price */}
+                    <div className="text-center">
+                        <p className="text-gray-500 text-sm font-bold uppercase tracking-wider">Total Price</p>
+                        <p className="text-3xl font-bold text-gray-800">
+                            RM {totals.base.toFixed(2)}
+                        </p>
+                    </div>
+
+                    {/* Total Penalty */}
+                    <div className="text-center">
+                        <p className="text-gray-500 text-sm font-bold uppercase tracking-wider">Total Penalty</p>
+                        <p className="text-3xl font-bold text-red-500">
+                            RM {totals.penalty.toFixed(2)}
+                        </p>
+                    </div>
+
+                    {/* Grand Total */}
+                    <div className="text-center relative">
+                        {/* A small vertical divider for desktop view */}
+                        <div className="hidden md:block absolute -left-8 top-1/2 -translate-y-1/2 w-px h-12 bg-gray-300"></div>
+                        
+                        <p className="text-blue-600 text-sm font-bold uppercase tracking-wider">Grand Total</p>
+                        <p className="text-4xl font-black text-blue-600">
+                            RM {totals.grandTotal.toFixed(2)}
+                        </p>
+                    </div>
+                </div>
 
                 {/* --- Payment Method Selection --- */}
                 <h3 className="text-lg font-semibold text-gray-700 mb-4">
@@ -120,7 +155,7 @@ export default function PaymentPage({ auth, parcels = [] }) {
                         <button
                             onClick={() => {
                                 setPaymentMethod('cash');
-                                setCashReceived(''); // Reset input bila tekan balik
+                                setCashReceived('');
                             }}
                             className={`flex flex-col items-center justify-center w-32 h-32 rounded-xl bg-white shadow-sm transition-all duration-200 border-2 focus:outline-none
                                 ${paymentMethod === 'cash' 
@@ -138,7 +173,7 @@ export default function PaymentPage({ auth, parcels = [] }) {
                         <button
                             onClick={() => {
                                 setPaymentMethod('ewallet');
-                                setCashReceived(''); // Clear cash input if switching
+                                setCashReceived('');
                             }}
                             className={`flex flex-col items-center justify-center w-32 h-32 rounded-xl bg-white shadow-sm transition-all duration-200 border-2 focus:outline-none
                                 ${paymentMethod === 'ewallet' 
@@ -153,7 +188,7 @@ export default function PaymentPage({ auth, parcels = [] }) {
                         </button>
                     </div>
 
-                    {/* 3. BAHAGIAN CALCULATOR: Hanya muncul bila Cash dipilih */}
+                    {/* Calculator Section */}
                     {paymentMethod === 'cash' && (
                         <div className="w-full mt-4 p-4 bg-white border border-gray-200 rounded-xl animate-fade-in-down">
                             <label className="block text-sm font-semibold text-gray-600 mb-2">
@@ -173,7 +208,6 @@ export default function PaymentPage({ auth, parcels = [] }) {
                                     RM {balanceAmount.toFixed(2)}
                                 </span>
                             </div>
-                            {/* Warning kalau duit tak cukup */}
                             {balanceAmount < 0 && (
                                 <p className="text-xs text-red-500 mt-1 text-right font-semibold">
                                     Insufficient amount!
@@ -181,7 +215,6 @@ export default function PaymentPage({ auth, parcels = [] }) {
                             )}
                         </div>
                     )}
-
                 </div>
 
                 {/* --- Action Buttons --- */}
