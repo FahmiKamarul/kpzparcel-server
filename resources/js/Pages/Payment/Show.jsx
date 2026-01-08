@@ -75,7 +75,7 @@ export default function PaymentPage({ auth, parcels = [] }) {
                             const subtotal = basePrice + penaltyCost;
 
                             return ( 
-                                <div key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 bg-white rounded-xl border-2 border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+                                <div key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 bg-white rounded-xl border-2 border-blue-400 shadow-sm hover:shadow-md transition-shadow">
                                     
                                     {/* LEFT: Parcel Details */}
                                     <div className="text-gray-800 text-sm space-y-1 w-full md:w-1/2 border-b md:border-b-0 md:border-r border-gray-200 pb-4 md:pb-0 md:pr-4 mb-4 md:mb-0">
@@ -189,32 +189,7 @@ export default function PaymentPage({ auth, parcels = [] }) {
                     </div>
 
                     {/* Calculator Section */}
-                    {paymentMethod === 'cash' && (
-                        <div className="w-full mt-4 p-4 bg-white border border-gray-200 rounded-xl animate-fade-in-down">
-                            <label className="block text-sm font-semibold text-gray-600 mb-2">
-                                Customer Gives (RM):
-                            </label>
-                            <input 
-                                type="number" 
-                                placeholder="0.00"
-                                value={cashReceived}
-                                onChange={(e) => setCashReceived(e.target.value)}
-                                className="w-full px-4 py-3 text-xl font-bold text-gray-800 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            />
-                            
-                            <div className="mt-4 flex justify-between items-center border-t pt-3 border-gray-100">
-                                <span className="text-gray-600 font-medium">Balance to Return:</span>
-                                <span className={`text-2xl font-bold ${balanceAmount < 0 ? 'text-red-500' : 'text-green-600'}`}>
-                                    RM {balanceAmount.toFixed(2)}
-                                </span>
-                            </div>
-                            {balanceAmount < 0 && (
-                                <p className="text-xs text-red-500 mt-1 text-right font-semibold">
-                                    Insufficient amount!
-                                </p>
-                            )}
-                        </div>
-                    )}
+                    
                 </div>
 
                 {/* --- Action Buttons --- */}

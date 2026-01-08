@@ -15,12 +15,20 @@ class PaymentController extends Controller{
         // 1. Fetch Payment Data
         $payment = Payment::where('PaymentID', $id)->firstOrFail();
 
-        // 2. Fetch Parcel Items (Same logic as before)
+        // 2. Fetch Parcel Items
+        // PENTING: Saya tambah 'parcel.ShelfNum' dan 'parcel.DateArrive' dalam select
         $paymentItems = DB::table('parcel_payments')
-                            ->join('parcel', 'parcel_payments.TrackingNum', '=', 'parcel.TrackingNum')
-                            ->where('parcel_payments.PaymentID', $id)
-                            ->select('parcel.TrackingNum', 'parcel.CourierID', 'parcel.Weight', 'parcel.Price')
-                            ->get();
+            ->join('parcel', 'parcel_payments.TrackingNum', '=', 'parcel.TrackingNum')
+            ->where('parcel_payments.PaymentID', $id)
+            ->select(
+                'parcel.TrackingNum', 
+                'parcel.CourierID', 
+                'parcel.Weight', 
+                'parcel.Price', 
+                'parcel.ShelfNum',   // <--- Perlu untuk paparan Rak
+                'parcel.DateArrive'  // <--- Perlu untuk kiraan Penalti
+            )
+            ->get();
 
         // 3. Load the view and pass data
         $pdf = Pdf::loadView('pdf.receipt', [
@@ -28,7 +36,7 @@ class PaymentController extends Controller{
             'items' => $paymentItems
         ]);
 
-        // 4. Download the PDF (or use ->stream() to open in browser)
+        // 4. Download/Stream
         return $pdf->stream('Receipt-'.$payment->PaymentID.'.pdf');
     }
     public function index()
