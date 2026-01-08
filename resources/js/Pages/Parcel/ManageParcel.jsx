@@ -1,41 +1,80 @@
 // src/Pages/ManageParcel.jsx
 
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react'; // Added router for the Pay action
-import React, { useState, useMemo ,useEffect} from 'react'; 
+import { Head, Link, router } from '@inertiajs/react';
+import React, { useState, useMemo, useEffect } from 'react'; 
 import { ParcelCard } from '@/Components/ParcelCard'; 
+// 1. Import the scanning hook
+import { useZxing } from "react-zxing";
+
+// --- Helper Component: Barcode Scanner Modal ---
+const BarcodeScannerModal = ({ onClose, onScan }) => {
+    // Standard parcel barcodes are usually Code 128 or Code 39, but zxing handles most by default.
+    const { ref } = useZxing({
+        onDecodeResult(result) {
+            // Once a code is found, pass it up and close the scanner
+            onScan(result.getText());
+            onClose(); 
+        },
+        // Optional: specific format constraints can be added here if needed
+    });
+
+    return (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-lg shadow-2xl overflow-hidden max-w-lg w-full relative">
+                <div className="p-4 bg-gray-800 text-white flex justify-between items-center">
+                    <h3 className="font-bold text-lg">Scan Barcode</h3>
+                    <button onClick={onClose} className="text-gray-300 hover:text-white">&times;</button>
+                </div>
+                <div className="relative bg-black h-64 sm:h-80 flex items-center justify-center overflow-hidden">
+                    {/* The video element acts as the camera view */}
+                    <video ref={ref} className="absolute min-w-full min-h-full object-cover" />
+                    
+                    {/* Visual Guide Overlay (Red Line) */}
+                    <div className="absolute inset-0 border-2 border-red-500/50 opacity-50 z-10 pointer-events-none rounded-lg m-8"></div>
+                    <div className="absolute w-full h-0.5 bg-red-600 top-1/2 left-0 z-20 shadow-[0_0_8px_rgba(220,38,38,0.8)]"></div>
+                </div>
+                <div className="p-4 text-center text-sm text-gray-600">
+                    Point camera at the parcel tracking number
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function ManageParcel({ auth, parcels, flash }) {
     
-    // 1. Search & Filter State
+    // --- State ---
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [showFlash, setShowFlash] = useState(false);
+    
+    // 2. Add state for scanner visibility
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
 
     useEffect(() => {
         if (flash.message) {
             setShowFlash(true);
-            const timer = setTimeout(() => setShowFlash(false), 3000); // Hide after 3 seconds
+            const timer = setTimeout(() => setShowFlash(false), 3000);
             return () => clearTimeout(timer);
         }
     }, [flash]);
-    // 2. Selection State (Stores an array of selected Parcel IDs)
+
     const [selectedIds, setSelectedIds] = useState([]);
+    
+    // Auto-refresh logic (Kept as is)
     useEffect(() => {
         const interval = setInterval(() => {
-            // Check if user is currently selecting items to avoid disrupting them?
-            // If you want it to ALWAYS reload, just use this:
             router.reload({
-                only: ['parcels'],    // Only re-fetch the 'parcels' prop from the server
-                preserveScroll: true, // Do not scroll back to top
-                preserveState: true,  // Keep the current search term and React state
+                only: ['parcels'],    
+                preserveScroll: true, 
+                preserveState: true,  
             });
-        }, 5000); // 5000 milliseconds = 5 seconds
-
-        // Cleanup function to stop the timer when the user leaves the page
+        }, 5000); 
         return () => clearInterval(interval);
     }, []);
-    // 3. Filter Logic
+
+    // Filter Logic (Kept as is)
     const filteredParcels = useMemo(() => {
         return parcels.filter(parcel => {
             const matchesSearch = parcel.TrackingNum.toLowerCase().includes(searchTerm.toLowerCase());
@@ -44,7 +83,6 @@ export default function ManageParcel({ auth, parcels, flash }) {
         });
     }, [parcels, searchTerm, statusFilter]);
 
-    // 4. Handle Individual Checkbox Toggle
     const toggleSelection = (id) => {
         if (selectedIds.includes(id)) {
             setSelectedIds(selectedIds.filter(selectedId => selectedId !== id));
@@ -53,71 +91,92 @@ export default function ManageParcel({ auth, parcels, flash }) {
         }
     };
 
-    // 5. Handle "Select All" Logic
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            // Select all visible parcels
-            const allVisibleIds = filteredParcels.map(p => p.id || p.TrackingNum); // Prefer ID, fallback to TrackingNum
+            const allVisibleIds = filteredParcels.map(p => p.id || p.TrackingNum);
             setSelectedIds(allVisibleIds);
         } else {
-            // Deselect all
             setSelectedIds([]);
         }
     };
 
-    // 6. Calculate Total Price
     const totalAmount = selectedIds.reduce((sum, id) => {
-        // Find the parcel object
         const parcel = parcels.find(p => (p.id || p.TrackingNum) === id);
-        // Ensure price is a number (Assuming parcel.Price is a number or string like "2.00")
         const price = parcel ? parseFloat(parcel.Price) : 0; 
         return sum + price;
     }, 0);
 
-    // 7. Handle Payment Action
     const handleBulkPay = () => {
-    if (selectedIds.length === 0) return;
+        if (selectedIds.length === 0) return;
+        router.get(route('payment.bulk'), { ids: selectedIds });
+    };
 
-    // Use Inertia to visit the GET route with data
-    router.get(route('payment.bulk'), { 
-        ids: selectedIds 
-    });
-};
+    // 3. Handler for successful scan
+    const handleScanResult = (result) => {
+        setSearchTerm(result);
+        // Optional: Play a beep sound
+        // new Audio('/beep.mp3').play().catch(e => console.log('Audio play failed', e));
+    };
 
     return (
         <AuthenticatedLayout user={auth.user}>
             <Head title="Parcel Management" />
 
-            {/* Added pb-32 to create space for the floating bar so it doesn't cover content */}
+            {/* 4. Render Scanner Modal if open */}
+            {isScannerOpen && (
+                <BarcodeScannerModal 
+                    onClose={() => setIsScannerOpen(false)} 
+                    onScan={handleScanResult} 
+                />
+            )}
+
             <div className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-100 min-h-screen pb-32">
-                {flash.message && (
+                {/* Flash Message ... */}
+                {flash.message && showFlash && (
                     <div className="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm flex justify-between items-center animate-fade-in-down">
                         <div>
                             <p className="font-bold">Success</p>
                             <p>{flash.message}</p>
                         </div>
-                        {/* Optional: Close button */}
                         <button 
-                            onClick={(e) => e.target.closest('div').style.display = 'none'}
+                            onClick={() => setShowFlash(false)}
                             className="text-green-700 hover:text-green-900 font-bold"
                         >
                             &times;
                         </button>
                     </div>
                 )}
-                {/* Search Bar and Add Parcel Button */}
+
+                {/* Search Bar Row */}
                 <div className="flex justify-start items-center mb-6 gap-4">
-                    <div className="relative w-96">
+                    <div className="relative w-96 flex">
                         <input
                             type="text"
                             placeholder="Tracking Number"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            // Added padding-right (pr-20) to make room for two icons
+                            className="w-full pl-4 pr-20 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
                         />
-                        <svg className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
+                        
+                        {/* Container for Icons */}
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                            {/* SCAN BUTTON */}
+                            <button 
+                                onClick={() => setIsScannerOpen(true)}
+                                className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                title="Scan Barcode"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                </svg>
+                            </button>
+
+                            {/* Existing Search Icon */}
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
                     </div>
                     
                     <Link
@@ -131,8 +190,9 @@ export default function ManageParcel({ auth, parcels, flash }) {
                     </Link>
                 </div>
 
-                {/* Filters & Select All Row */}
+                {/* Filters, Grid, and Floating Bar remain unchanged below... */}
                 <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
+                    {/* ... (Existing Filter buttons code) ... */}
                     <div className="flex gap-3">
                         {['all', 'collected', 'ready'].map((status) => (
                             <button
@@ -149,12 +209,10 @@ export default function ManageParcel({ auth, parcels, flash }) {
                         ))}
                     </div>
 
-                    {/* SELECT ALL CHECKBOX */}
                     <div className="flex items-center bg-white px-4 py-2 rounded-lg border border-gray-300 shadow-sm">
                         <input 
                             type="checkbox" 
                             id="selectAll"
-                            // Checked if visible count > 0 AND all visible are selected
                             checked={filteredParcels.length > 0 && filteredParcels.every(p => selectedIds.includes(p.id || p.TrackingNum))}
                             onChange={handleSelectAll}
                             className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -165,14 +223,12 @@ export default function ManageParcel({ auth, parcels, flash }) {
                     </div>
                 </div>
 
-                {/* Parcel Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredParcels.length > 0 ? (
                         filteredParcels.map((parcel) => (
                             <ParcelCard 
                                 key={parcel.TrackingNum} 
                                 parcel={parcel}
-                                // Pass selection props
                                 isSelected={selectedIds.includes(parcel.id || parcel.TrackingNum)}
                                 onToggle={() => toggleSelection(parcel.id || parcel.TrackingNum)}
                             />
@@ -185,20 +241,16 @@ export default function ManageParcel({ auth, parcels, flash }) {
                 </div>
             </div>
 
-            {/* --- FLOATING ACTION BAR (Sticky Footer) --- */}
             <div 
                 className={`fixed bottom-0 left-0 w-full bg-white border-t-4 border-blue-600 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] p-4 z-50 transition-transform duration-300 ease-in-out ${
                     selectedIds.length > 0 ? 'translate-y-0' : 'translate-y-full'
                 }`}
             >
                 <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8">
-                    
-                    {/* Count */}
                     <div className="text-gray-700 font-medium">
                         <span className="font-bold text-blue-600 text-lg">{selectedIds.length}</span> parcels selected
                     </div>
 
-                    {/* Total & Button */}
                     <div className="flex items-center gap-6">
                         <div className="text-right">
                             <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Total Amount</p>

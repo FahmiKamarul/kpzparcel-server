@@ -30,9 +30,11 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"    # <--- ADD THIS (Opens the SSL port)
     volumes:
       - ./:/var/www
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl  # <--- ADD THIS (Lets Nginx see your keys)
     depends_on:
       - app
     networks:
