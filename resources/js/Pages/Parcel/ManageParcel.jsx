@@ -68,7 +68,8 @@ export default function ManageParcel({ auth, parcels, flash }) {
     // Filter Logic
     const filteredParcels = useMemo(() => {
         return parcels.filter(parcel => {
-            const matchesSearch = parcel.TrackingNum.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch = parcel.TrackingNum.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                  parcel.CustomerName.toLowerCase().includes(searchTerm.toLowerCase());
             
             // Exact status matching (case-insensitive)
             const matchesStatus = statusFilter === 'all' || parcel.Status.toLowerCase() === statusFilter.toLowerCase();
@@ -145,7 +146,7 @@ export default function ManageParcel({ auth, parcels, flash }) {
                     <div className="relative w-96 flex">
                         <input
                             type="text"
-                            placeholder="Tracking Number"
+                            placeholder="Tracking Number or Customer Name"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-4 pr-20 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"

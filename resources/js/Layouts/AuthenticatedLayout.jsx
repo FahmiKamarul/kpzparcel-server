@@ -29,7 +29,7 @@ export default function AuthenticatedLayout({ header, children }) {
 
                         {/* Center Links */}
                         <div className="hidden sm:flex sm:items-center sm:space-x-8">
-                            {user && (
+                            {user && user.Role === 'Manager' && (
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
