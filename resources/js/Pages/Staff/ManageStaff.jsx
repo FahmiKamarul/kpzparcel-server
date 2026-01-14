@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 
-export default function ManageStaff({ auth, staffList }) {
+export default function ManageStaff({ auth, staffList, passwordResetRequests }) {
     
     // State for the search bar and filters
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState(''); // '' = All
     const [statusFilter, setStatusFilter] = useState(''); // '' = All
 
+    const { post, processing } = useForm({});
+
     // --- AUTO RELOAD LOGIC ---
     useEffect(() => {
         const interval = setInterval(() => {
             router.reload({ 
-                only: ['staffList'],
+                only: ['staffList', 'passwordResetRequests'],
                 preserveScroll: true 
             });
         }, 3000); 
@@ -43,6 +45,18 @@ export default function ManageStaff({ auth, staffList }) {
                 preserveScroll: true,
             });
         }
+    };
+
+    const handleApprovePasswordReset = (requestId) => {
+        post(route('password-reset-request.approve', requestId), {
+            preserveScroll: true,
+        });
+    };
+
+    const handleRejectPasswordReset = (requestId) => {
+        post(route('password-reset-request.reject', requestId), {
+            preserveScroll: true,
+        });
     };
     
     return (
@@ -168,6 +182,27 @@ export default function ManageStaff({ auth, staffList }) {
 
                                     {/* Right Side: Action Buttons */}
                                     <div className="flex items-center space-x-3 ml-4 flex-shrink-0">
+                                        {passwordResetRequests[user.StaffID] && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleApprovePasswordReset(passwordResetRequests[user.StaffID].id)}
+                                                    disabled={processing}
+                                                    className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg text-sm transition-all shadow-sm hover:shadow"
+                                                    title="Approve password reset request"
+                                                >
+                                                    Approve Reset
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRejectPasswordReset(passwordResetRequests[user.StaffID].id)}
+                                                    disabled={processing}
+                                                    className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg text-sm transition-all shadow-sm hover:shadow"
+                                                    title="Reject password reset request"
+                                                >
+                                                    Reject Reset
+                                                </button>
+                                            </>
+                                        )}
+                                        
                                         <Link
                                             href={route('staff.update', user.StaffID)}
                                             className="bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 font-medium py-2 px-4 rounded-lg text-sm transition-all shadow-sm hover:shadow"

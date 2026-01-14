@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\PasswordResetRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;         
@@ -14,9 +15,16 @@ class StaffController extends Controller
     {
 
         $staffList = User::latest()->get(); 
+        
+        // Get all pending password reset requests with user data
+        $passwordResetRequests = PasswordResetRequest::with('user')
+            ->where('status', 'pending')
+            ->get()
+            ->keyBy('StaffID'); // Key by StaffID for easy lookup
 
         return Inertia::render('Staff/ManageStaff', [
-            'staffList' => $staffList
+            'staffList' => $staffList,
+            'passwordResetRequests' => $passwordResetRequests
         ]);
     }
     public function destroy(User $user)

@@ -30,6 +30,16 @@ Route::middleware(['auth','manager'])->group(function () {
         ->name('staff.destroy');
     Route::get('/staff/{user}/update', [StaffController::class, 'update'])->name('staff.update');
     Route::patch('/staff/{user}/edit', [StaffController::class, 'edit'])->name('staff.edit');
+    
+    // Password reset management
+    Route::get('/password-reset-requests', [\App\Http\Controllers\PasswordResetRequestController::class, 'index'])
+        ->name('password-reset-request.index');
+    Route::post('/password-reset-requests/{passwordResetRequest}/approve', [\App\Http\Controllers\PasswordResetRequestController::class, 'approve'])
+        ->name('password-reset-request.approve');
+    Route::post('/password-reset-requests/{passwordResetRequest}/reject', [\App\Http\Controllers\PasswordResetRequestController::class, 'reject'])
+        ->name('password-reset-request.reject');
+    Route::get('/password-reset-history', [\App\Http\Controllers\PasswordResetRequestController::class, 'history'])
+        ->name('password-reset-request.history');
 });
 Route::middleware('auth')->group(function () {
     Route ::get('/parcels', [App\Http\Controllers\ParcelsController::class, 'index'])->name('parcels.manage');
