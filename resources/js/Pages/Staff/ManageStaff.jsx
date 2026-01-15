@@ -122,11 +122,10 @@ export default function ManageStaff({ auth, staffList, passwordResetRequests }) 
                     </div>
 
                     {/* STAFF CARDS LIST */}
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {filteredStaff.length === 0 ? (
                             <div className="text-center text-gray-500 py-16 text-lg bg-white rounded-xl shadow-md border border-gray-100">
                                 <p className="mb-2">No staff matching your filters.</p>
-                                <p className="text-sm">Try adjusting your search or filters.</p>
                                 <button 
                                     onClick={() => {setSearchQuery(''); setRoleFilter(''); setStatusFilter('');}}
                                     className="mt-4 text-blue-600 hover:underline text-sm font-medium"
@@ -136,83 +135,86 @@ export default function ManageStaff({ auth, staffList, passwordResetRequests }) 
                             </div>
                         ) : (
                             filteredStaff.map((user) => (
-                                <div key={user.id} className="bg-white rounded-xl shadow-lg p-6 lg:p-8 flex justify-between items-center transition-all duration-300 hover:shadow-xl hover:ring-2 hover:ring-blue-50 border border-gray-100">
+                                <div key={user.id} className="bg-white rounded-xl shadow-sm p-6 flex flex-col xl:flex-row justify-between xl:items-center gap-6 border border-gray-100 transition-all hover:shadow-md">
                                     
-                                    {/* Left Side: Profile Pic + Staff ID + Info */}
-                                    <div className="flex items-center gap-6 lg:gap-8">
+                                    {/* LEFT SIDE: Avatar -> ID -> Info */}
+                                    <div className="flex items-center self-start gap-6 xl:self-auto">
                                         
-                                        {/* 1. Profile Picture */}
-                                        <div className="flex-shrink-0">
-                                            <img 
-                                                src={`/storage/${user.profile_image}` || '/images/default-avatar.png'} 
-                                                alt={user.Name}
-                                                className="h-20 w-20 rounded-full object-cover border-2 border-gray-100 shadow-sm"
-                                                onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + user.Name + '&background=EBF4FF&color=7F9CF5'; }}
-                                            />
+                                        {/* 1. Avatar */}
+                                        <img 
+                                            src={`/storage/${user.profile_image}` || '/images/default-avatar.png'} 
+                                            alt={user.Name}
+                                            className="h-16 w-16 rounded-full object-cover border border-gray-200"
+                                            onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + user.Name + '&background=EBF4FF&color=7F9CF5'; }}
+                                        />
+
+                                        {/* 2. ID Box */}
+                                        <div className="h-14 w-16 bg-gray-50 rounded-lg flex flex-col items-center justify-center border border-gray-100 shadow-sm">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase">ID</span>
+                                            <span className="text-lg font-bold text-blue-600">{user.StaffID}</span>
                                         </div>
 
-                                        {/* 2. Staff ID Block */}
-                                        <div className="flex-shrink-0 min-w-[75px] h-16 bg-gray-50 rounded-lg flex flex-col items-center justify-center text-gray-700 font-bold p-2 text-center border border-gray-100">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID</span>
-                                            <span className="text-lg font-extrabold leading-tight text-blue-600">{user.StaffID}</span>
-                                        </div>
-                                        
-                                        {/* 3. Info Block */}
-                                        <div className="min-w-0">
-                                            <div className="flex items-center space-x-3 mb-1">
-                                                <h3 className="text-xl font-bold text-gray-800 truncate">{user.Name}</h3>
-                                                <span 
-                                                    className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wide ${
-                                                        user.ActiveStatus === 1 
-                                                            ? 'bg-green-100 text-green-700 border border-green-200' 
-                                                            : 'bg-red-100 text-red-700 border border-red-200'
-                                                    }`}
-                                                >
+                                        {/* 3. Name & Role */}
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-3">
+                                                <h3 className="text-lg font-bold text-gray-800">{user.Name}</h3>
+                                                <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wide ${
+                                                    user.ActiveStatus === 1 
+                                                        ? 'bg-green-100 text-green-700 border border-green-200' 
+                                                        : 'bg-red-100 text-red-700 border border-red-200'
+                                                }`}>
                                                     {user.ActiveStatus === 1 ? 'Active' : 'Inactive'}
                                                 </span>
                                             </div>
-                                            
-                                            <div className="flex items-center text-sm text-gray-500">
-                                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-semibold mr-2">
+                                            <div className="mt-1">
+                                                 <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-semibold border border-gray-200">
                                                     {user.Role}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Right Side: Action Buttons */}
-                                    <div className="flex items-center space-x-3 ml-4 flex-shrink-0">
-                                        {passwordResetRequests[user.StaffID] && (
-                                            <>
-                                                <button
-                                                    onClick={() => handleApprovePasswordReset(passwordResetRequests[user.StaffID].id)}
-                                                    disabled={processing}
-                                                    className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg text-sm transition-all shadow-sm hover:shadow"
-                                                    title="Approve password reset request"
-                                                >
-                                                    Approve Reset
-                                                </button>
-                                                <button
-                                                    onClick={() => handleRejectPasswordReset(passwordResetRequests[user.StaffID].id)}
-                                                    disabled={processing}
-                                                    className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg text-sm transition-all shadow-sm hover:shadow"
-                                                    title="Reject password reset request"
-                                                >
-                                                    Reject Reset
-                                                </button>
-                                            </>
-                                        )}
+                                    {/* RIGHT SIDE: Action Group */}
+                                    {/* 'items-end' aligns buttons to bottom. 'gap-3' separates the groups. */}
+                                    <div className="flex items-end gap-3 self-end xl:self-auto">
                                         
+                                        {/* Logic: If Password Reset Request Exists */}
+                                        {passwordResetRequests[user.StaffID] && (
+                                            <div className="flex flex-col items-start gap-1 mr-2">
+                                                <span className="text-blue-600 font-bold text-xs ml-0.5 self-center">
+                                                    Password Reset Request
+                                                </span>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleApprovePasswordReset(passwordResetRequests[user.StaffID].id)}
+                                                        disabled={processing}
+                                                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-1.5 px-3 rounded shadow-sm text-sm transition-colors border border-transparent"
+                                                    >
+                                                        Approve Reset
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRejectPasswordReset(passwordResetRequests[user.StaffID].id)}
+                                                        disabled={processing}
+                                                        className="bg-red-500 hover:bg-red-600 text-white font-medium py-1.5 px-3 rounded shadow-sm text-sm transition-colors border border-transparent"
+                                                    >
+                                                        Reject Reset
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Edit Button - Reduced padding (py-1.5) to match the buttons above */}
                                         <Link
                                             href={route('staff.update', user.StaffID)}
-                                            className="bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 font-medium py-2 px-4 rounded-lg text-sm transition-all shadow-sm hover:shadow"
+                                            className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-blue-600 hover:border-blue-300 font-medium py-1.5 px-4 rounded shadow-sm text-sm transition-colors flex items-center"
                                         >
                                             Edit
                                         </Link>
 
+                                        {/* Delete Button */}
                                         <button 
                                             onClick={() => handleDelete(user)}
-                                            className="text-gray-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors"
+                                            className="text-gray-400 hover:text-red-600 p-1.5 rounded transition-colors flex items-center justify-center"
                                             title="Delete Staff"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

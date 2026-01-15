@@ -108,7 +108,7 @@ class PasswordResetRequestController extends Controller
     /**
      * Reject a password reset request
      */
-    public function reject(Request $request, PasswordResetRequest $resetRequest): RedirectResponse
+    public function reject(Request $request, $id): RedirectResponse
     {
         // Only managers can reject
         if (Auth::user()->Role !== 'Manager') {
@@ -119,16 +119,20 @@ class PasswordResetRequestController extends Controller
             'rejection_reason' => 'nullable|string|max:500',
         ]);
 
+        // Find the password reset request
+        $resetRequest = PasswordResetRequest::find($id);
+        if (!$resetRequest) {
+            return back()->with('error', 'Password reset request not found.');
+        }
+
         $user = User::find($resetRequest->StaffID);
         if (!$user) {
             return back()->with('error', 'User not found.');
         }
 
         try {
-            // Delete the password reset request directly from database
-            DB::table('password_reset_requests')
-                ->where('id', $resetRequest->id)
-                ->delete();
+            // Delete the password reset request
+            $resetRequest->forceDelete();
 
             return back()->with('success', "Password reset rejected for {$user->Name}.");
         } catch (\Exception $e) {
